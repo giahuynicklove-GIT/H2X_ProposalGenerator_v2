@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H2X Studio — Fee Proposal Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:#141414; --offwhite:#F9F9F7; --cream:#F2F0ED; --white:#FFFFFF;
+  --terra:#C7A07F; --terra-dk:#B8895F; --gold:#D6BBA6;
+  --gray:#999; --gray-lt:#E0DDD8; --dark:#1A1814; --dark2:#221F1A;
+  --border:#E0DDD8; --row-alt:#F2F0ED; --red:#C0392B; --blue:#2563EB;
+  --green:#1a7a3a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--offwhite);color:var(--black);font-size:13px;min-height:100vh}
+
+/* HEADER */
+header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;border-bottom:1px solid #3A3530}
+.logo-wrap{display:flex;align-items:baseline;gap:8px}
+.logo-h2x{font-family:'Playfair Display',serif;font-size:20px;color:#fff;font-weight:600}
+.logo-studio{font-size:8px;color:var(--terra);letter-spacing:4px}
+.header-sub{font-size:11px;color:var(--gold);font-family:'Playfair Display',serif}
+
+/* LAYOUT */
+.wrap{max-width:1160px;margin:0 auto;padding:28px 20px 100px;display:grid;grid-template-columns:260px 1fr;gap:20px;align-items:start}
+
+/* SIDEBAR */
+.sidebar{position:sticky;top:62px;background:var(--dark);border-radius:4px;overflow:hidden}
+.sidebar-head{font-size:8px;letter-spacing:3px;color:var(--terra);padding:18px 20px 12px;border-bottom:1px solid #3A3530}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;transition:background .15s;color:#77736e;font-size:12px;border-left:2px solid transparent}
+.nav-item:hover{background:#2A2520;color:#fff}
+.nav-item.active{background:#2A2520;color:#fff;border-left-color:var(--terra)}
+.nav-item.done{color:#556055}
+.nav-num{width:22px;height:22px;border-radius:50%;background:#2d2a26;font-size:10px;color:var(--gray);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Playfair Display',serif}
+.nav-item.active .nav-num{background:var(--terra);color:#fff}
+.nav-item.done .nav-num{background:#1a3a1a;color:#5dbf5d;font-size:0}
+.nav-item.done .nav-num::before{content:'✓';font-size:10px;font-family:sans-serif}
+.nav-badge{font-size:9px;padding:1px 6px;border-radius:10px;margin-left:auto;font-weight:500}
+.badge-red{background:#3a1515;color:#e87070}
+.badge-blue{background:#152040;color:#6b9fe8}
+
+/* PROGRESS */
+.prog-bar{height:2px;background:var(--border);margin-bottom:20px;border-radius:1px}
+.prog-fill{height:100%;background:var(--terra);border-radius:1px;transition:width .3s}
+
+/* SECTION CARD */
+.section{display:none;background:#fff;border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.section.active{display:block}
+.sec-head{padding:18px 26px 14px;border-bottom:1px solid var(--border)}
+.sec-head.red-mode{background:#1a0a0a;border-bottom-color:#3a1515}
+.sec-head.blue-mode{background:#0a1020;border-bottom-color:#152040}
+.sec-head.auto-mode{background:var(--dark2);border-bottom-color:#3A3530}
+.sec-num{font-size:8px;letter-spacing:3px;margin-bottom:3px}
+.red-mode .sec-num{color:#e87070}
+.blue-mode .sec-num{color:#6b9fe8}
+.auto-mode .sec-num{color:var(--terra)}
+.sec-title{font-family:'Playfair Display',serif;font-size:19px;color:#fff}
+.sec-sub{font-size:11px;color:#666;margin-top:3px}
+
+/* MODE BADGE */
+.mode-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:12px;font-size:10px;font-weight:500;margin-top:8px}
+.mode-badge.red{background:#3a1515;color:#e87070}
+.mode-badge.blue{background:#152040;color:#6b9fe8}
+.mode-badge.auto{background:#2A2520;color:var(--terra)}
+.mode-badge svg{width:10px;height:10px}
+
+/* BODY */
+.sec-body{padding:24px 26px}
+
+/* FIELDS */
+.frow{display:grid;gap:14px;margin-bottom:14px}
+.frow.c2{grid-template-columns:1fr 1fr}
+.frow.c3{grid-template-columns:1fr 1fr 1fr}
+.frow.c1{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:9px;letter-spacing:1.5px;color:var(--terra);font-weight:500;text-transform:uppercase}
+.field input,.field textarea,.field select{background:var(--offwhite);border:1px solid var(--border);padding:9px 11px;border-radius:3px;font-family:'Inter',sans-serif;font-size:13px;color:var(--black);outline:none;transition:border-color .15s;width:100%}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--terra);background:#fff}
+.field textarea{resize:vertical;min-height:72px;line-height:1.6}
+.field-hint{font-size:10px;color:var(--gray);line-height:1.5;margin-top:2px}
+.divider{height:1px;background:var(--border);margin:18px 0}
+.sec-label{font-size:9px;letter-spacing:2px;color:var(--terra);margin-bottom:10px;text-transform:uppercase}
+
+/* SCOPE TOGGLE */
+.scope-wrap{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:18px;border-radius:3px;overflow:hidden;border:1px solid var(--border)}
+.scope-btn{padding:14px 16px;background:var(--offwhite);cursor:pointer;text-align:center;transition:all .15s;border:none;font-family:'Inter',sans-serif}
+.scope-btn:first-child{border-right:1px solid var(--border)}
+.scope-btn.active{background:var(--dark);color:#fff}
+.scope-btn .sl{font-size:13px;font-weight:600;display:block;margin-bottom:2px}
+.scope-btn .sd{font-size:10px;opacity:.65}
+
+/* FEE CALCULATOR */
+.fee-box{background:var(--cream);border:1px solid var(--border);border-radius:4px;padding:18px;margin-top:14px}
+.fee-box-title{font-size:9px;letter-spacing:2px;color:var(--terra);margin-bottom:12px}
+.fee-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.fee-row:last-child{border-bottom:none}
+.fee-row.subtotal{font-weight:600;font-size:13px;border-top:1px solid var(--terra);border-bottom:none;padding-top:10px;margin-top:4px}
+.fee-row.grand{background:var(--dark);margin:12px -18px -18px;padding:14px 18px;border-radius:0 0 3px 3px;color:#fff;font-weight:600;font-size:14px;border-bottom:none}
+.fee-amt{font-family:'Playfair Display',serif;color:var(--terra-dk)}
+.fee-row.grand .fee-amt{color:var(--gold);font-size:16px}
+.fee-row.discount{background:#1a2d1a;margin:8px -18px -18px;padding:10px 18px;border-radius:0 0 3px 3px;color:#6dbf6d;font-size:11px;border-bottom:none}
+
+/* AI PANEL */
+.ai-panel{background:#0a1020;border:1px solid #152040;border-radius:4px;padding:18px;margin-bottom:18px}
+.ai-panel-title{font-size:9px;letter-spacing:2px;color:#6b9fe8;margin-bottom:12px}
+.ai-input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.ai-input-row .field label{color:#6b9fe8}
+.ai-input-row .field input,.ai-input-row .field select,.ai-input-row .field textarea{background:#0d1628;border-color:#1e3060;color:#c8d8f0}
+.ai-input-row .field input:focus,.ai-input-row .field select:focus{border-color:#6b9fe8;background:#0a1020}
+.btn-ai{display:flex;align-items:center;gap:8px;padding:10px 20px;background:#1e3060;color:#6b9fe8;border:1px solid #2a4080;border-radius:3px;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;width:fit-content}
+.btn-ai:hover{background:#2a4080;color:#fff}
+.btn-ai.loading{opacity:.6;cursor:wait}
+
+/* AI RESULT */
+.ai-result{display:none;margin-top:14px}
+.ai-result.show{display:block}
+.ai-result-box{background:#0d1628;border:1px solid #1e3060;border-radius:4px;padding:14px;margin-bottom:10px}
+.ai-result-label{font-size:9px;letter-spacing:2px;color:#6b9fe8;margin-bottom:8px}
+.ai-result-content{font-size:12px;color:#c8d8f0;line-height:1.7}
+.ai-apply-btn{font-size:11px;color:#6b9fe8;background:none;border:none;cursor:pointer;padding:4px 0;text-decoration:underline}
+.ai-apply-btn:hover{color:#fff}
+
+/* ZONE TABLE */
+.zone-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.zone-tbl th{background:var(--dark);color:#fff;padding:7px 10px;text-align:left;font-size:8px;letter-spacing:1.5px;font-weight:500}
+.zone-tbl td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+.zone-tbl tr:nth-child(even) td{background:var(--cream)}
+.zone-tbl tr:last-child td{background:#E8E4DF;font-weight:600;color:var(--terra-dk)}
+.zone-tbl input{background:transparent;border:none;width:100%;font-size:12px;color:var(--black);padding:0;outline:none;font-family:'Inter',sans-serif}
+.zone-tbl input:focus{border-bottom:1px solid var(--terra)}
+.zone-tbl td.zone-name{color:var(--black);font-weight:500;font-size:12px}
+
+/* ADDON CARDS */
+.addon-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.addon-card{border:1px solid var(--border);border-radius:4px;padding:14px;cursor:pointer;transition:all .15s;background:var(--offwhite);user-select:none}
+.addon-card:hover{border-color:var(--terra)}
+.addon-card.sel{border-color:var(--terra);background:#fff}
+.addon-card.sel .addon-chk{background:var(--terra);border-color:var(--terra)}
+.addon-card.sel .addon-chk::after{opacity:1}
+.addon-hd{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+.addon-chk{width:17px;height:17px;border:1.5px solid var(--border);border-radius:3px;flex-shrink:0;margin-top:2px;position:relative;transition:all .15s}
+.addon-chk::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:9px;color:#fff;opacity:0}
+.addon-title{font-family:'Playfair Display',serif;font-size:13px;color:var(--black)}
+.addon-partner{font-size:9px;color:var(--terra);margin-bottom:5px}
+.addon-desc{font-size:11px;color:var(--gray);line-height:1.6}
+.addon-fee{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.addon-fee label{font-size:10px;color:var(--gray);white-space:nowrap}
+.addon-fee input{flex:1;background:var(--offwhite);border:1px solid var(--border);padding:5px 8px;border-radius:3px;font-size:12px;color:var(--black);font-family:'Inter',sans-serif;outline:none}
+
+/* SUMMARY */
+.summary-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.summary-tbl td{padding:9px 12px;border-bottom:1px solid var(--border)}
+.summary-tbl tr:nth-child(even) td{background:var(--cream)}
+.summary-tbl .label{color:var(--gray);width:200px;font-size:12px}
+.summary-tbl .value{color:var(--black);font-weight:500}
+.summary-tbl .value.highlight{color:var(--terra-dk);font-family:'Playfair Display',serif;font-size:16px}
+
+/* TEAM BOX */
+.team-box{background:var(--cream);border-radius:4px;padding:16px;font-size:12px;line-height:1.9;color:var(--gray)}
+.team-box strong{color:var(--black)}
+
+/* FOOTER */
+.sec-footer{padding:16px 26px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--offwhite)}
+.btn{padding:9px 22px;border-radius:3px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;border:none;transition:all .15s}
+.btn-back{background:var(--cream);color:var(--black);border:1px solid var(--border)}
+.btn-back:hover{background:var(--border)}
+.btn-next{background:var(--terra);color:#fff}
+.btn-next:hover{background:var(--terra-dk)}
+.btn-gen{background:var(--dark);color:#fff;padding:13px 36px;font-size:14px;font-family:'Playfair Display',serif}
+.btn-gen:hover{background:#2A2520}
+.btn-gen.busy{opacity:.65;cursor:wait}
+
+.ok-msg{display:none;background:#1a2d1a;border:1px solid #2d4a2d;border-radius:4px;padding:12px 18px;color:#6dbf6d;font-size:12px;margin-top:12px;align-items:center;gap:8px}
+.ok-msg.show{display:flex}
+
+/* RESPONSIVE */
+@media(max-width:780px){
+  .wrap{grid-template-columns:1fr}
+  .sidebar{position:static}
+  .frow.c2,.frow.c3,.ai-input-row{grid-template-columns:1fr}
+  .addon-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap">
+    <span class="logo-h2x">H2X</span>
+    <span class="logo-studio">STUDIO</span>
+  </div>
+  <div class="header-sub">Fee Proposal Generator</div>
+</header>
+
+<div class="wrap">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-head">SLIDES</div>
+
+    <div class="nav-item active" data-s="1" onclick="go(1)">
+      <div class="nav-num">1</div>
+      <span>Cover & Project Info</span>
+      <span class="nav-badge badge-red">●</span>
+    </div>
+    <div class="nav-item" data-s="2" onclick="go(2)">
+      <div class="nav-num">2</div>
+      <span>Project Understanding</span>
+      <span class="nav-badge badge-red">●</span>
+    </div>
+    <div class="nav-item" data-s="3" onclick="go(3)">
+      <div class="nav-num">3</div>
+      <span>Scope of Services</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+    </div>
+    <div class="nav-item" data-s="4" onclick="go(4)">
+      <div class="nav-num">4</div>
+      <span>Zoning Programme</span>
+      <span class="nav-badge badge-blue">AI</span>
+    </div>
+    <div class="nav-item" data-s="5" onclick="go(5)">
+      <div class="nav-num">5</div>
+      <span>Design Language</span>
+      <span class="nav-badge badge-blue">AI</span>
+    </div>
+    <div class="nav-item" data-s="6" onclick="go(6)">
+      <div class="nav-num">6</div>
+      <span>Lighting Design</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+    </div>
+    <div class="nav-item" data-s="7" onclick="go(7)">
+      <div class="nav-num">7</div>
+      <span>Project Team</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+    </div>
+    <div class="nav-item" data-s="8" onclick="go(8)">
+      <div class="nav-num">8</div>
+      <span>Design Process</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+    </div>
+    <div class="nav-item" data-s="9" onclick="go(9)">
+      <div class="nav-num">9</div>
+      <span>Design Fee</span>
+      <span class="nav-badge badge-red">●</span>
+    </div>
+    <div class="nav-item" data-s="10" onclick="go(10)">
+      <div class="nav-num">10</div>
+      <span>Add-on Workstreams</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+    </div>
+    <div class="nav-item" data-s="11" onclick="go(11)">
+      <div class="nav-num">11</div>
+      <span>Add-on Fee Table</span>
+      <span class="nav-badge badge-red">●</span>
+    </div>
+    <div class="nav-item" data-s="12" onclick="go(12)">
+      <div class="nav-num">12</div>
+      <span>Payment Schedule</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+    </div>
+    <div class="nav-item" data-s="13" onclick="go(13)">
+      <div class="nav-num">13</div>
+      <span>Incl. & Exclusions</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+    </div>
+    <div class="nav-item" data-s="14" onclick="go(14)">
+      <div class="nav-num">14</div>
+      <span>Terms & Conditions</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+    </div>
+    <div class="nav-item" data-s="15" onclick="go(15)">
+      <div class="nav-num">15</div>
+      <span>Thank You / Contact</span>
+      <span class="nav-badge badge-red">●</span>
+    </div>
+    <div class="nav-item" data-s="16" onclick="go(16)" style="border-top:1px solid #3A3530;margin-top:8px">
+      <div class="nav-num" style="background:var(--terra);color:#fff">↓</div>
+      <span style="color:var(--terra);font-weight:600">Generate PPTX</span>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div>
+    <div class="prog-bar"><div class="prog-fill" id="prog" style="width:6%"></div></div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S1: COVER — 🔴 USER INPUT -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section active" id="s1">
+      <div class="sec-head red-mode">
+        <div class="sec-num">SLIDE 01</div>
+        <div class="sec-title">Cover & Project Info</div>
+        <div class="sec-sub">Thông tin xuất hiện trên trang bìa và xuyên suốt proposal</div>
+        <div class="mode-badge red">● Nhập thông tin</div>
+      </div>
+      <div class="sec-body">
+        <div class="frow c2">
+          <div class="field"><label>Tên Dự án *</label><input id="projectName" placeholder="VD: Taseco Premium Lounge"/></div>
+          <div class="field"><label>Tên Khách hàng *</label><input id="clientName" placeholder="VD: Taseco"/></div>
+        </div>
+        <div class="frow c2">
+          <div class="field"><label>Địa điểm *</label><input id="location" placeholder="VD: Long Thành International Airport"/></div>
+          <div class="field"><label>Loại hình (Typology)</label>
+            <select id="typology">
+              <option>Premium / Business Airport Lounge</option>
+              <option>F&B Fine Dining</option>
+              <option>F&B Casual-Premium</option>
+              <option>Gallery / Exhibition Space</option>
+              <option>Boutique Hotel Public Area</option>
+              <option>Wellness / Spa</option>
+              <option>Mixed-use Hospitality</option>
+            </select>
+          </div>
+        </div>
+        <div class="frow c3">
+          <div class="field"><label>Tổng diện tích ~(m²) *</label><input id="area" type="number" placeholder="1400"/></div>
+          <div class="field"><label>Version</label><input id="version" placeholder="01" value="01"/></div>
+          <div class="field"><label>Tháng / Năm</label><input id="month" placeholder="JUNE 2026" value="JUNE 2026"/></div>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <span style="font-size:11px;color:var(--gray)">● Ô đỏ = bắt buộc nhập</span>
+        <button class="btn btn-next" onclick="go(2)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S2: PROJECT UNDERSTANDING — 🔴 USER INPUT -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s2">
+      <div class="sec-head red-mode">
+        <div class="sec-num">SLIDE 02</div>
+        <div class="sec-title">Project Understanding</div>
+        <div class="sec-sub">Nội dung 4 block: Opportunity · Brief · Experience Intent · Why H2X</div>
+        <div class="mode-badge red">● Nhập thông tin</div>
+      </div>
+      <div class="sec-body">
+        <div class="frow c1">
+          <div class="field">
+            <label>The Opportunity</label>
+            <textarea id="opportunity" rows="3" placeholder="Mô tả cơ hội dự án — tầm quan trọng, vị trí thị trường, lý do đây là dự án có ý nghĩa...&#10;VD: Long Thành will become Vietnam's flagship international gateway. Its lounge is not a waiting room — it is the first and last impression of the journey."></textarea>
+          </div>
+        </div>
+        <div class="frow c2">
+          <div class="field">
+            <label>Target Guest / User</label>
+            <input id="targetGuest" placeholder="VD: J/F-class, premium card & priority-pass travellers"/>
+          </div>
+          <div class="field">
+            <label>Experience Intent (tóm tắt)</label>
+            <input id="experienceIntent" placeholder="VD: A calm sanctuary — quiet luxury, warm materials, a distinctly Vietnamese sense of place"/>
+          </div>
+        </div>
+        <div class="frow c1">
+          <div class="field">
+            <label>Why H2X (có thể để mặc định)</label>
+            <textarea id="whyH2x" rows="2" placeholder="H2X (Human + Hospitality × eXperiences) designs for operation and guest journey, not décor alone — with deep experience in Vietnam, to international standards. We are ready to begin.">H2X (Human + Hospitality × eXperiences) designs for operation and guest journey, not décor alone — with deep experience in Vietnam, to international standards. We are ready to begin.</textarea>
+          </div>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(1)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(3)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S3: SCOPE — AUTO -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s3">
+      <div class="sec-head auto-mode">
+        <div class="sec-num">SLIDE 03</div>
+        <div class="sec-title">Scope of Services</div>
+        <div class="sec-sub">Chọn kịch bản — nội dung slide tự động generate</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body">
+        <div class="scope-wrap">
+          <div class="scope-btn active" id="scopeA" onclick="setScope('A')">
+            <span class="sl">Kịch bản A — Concept → Schematic</span>
+            <span class="sd">Phổ biến nhất · F&B, Lounge, Gallery nhỏ–vừa · ~9–11 tuần</span>
+          </div>
+          <div class="scope-btn" id="scopeB" onclick="setScope('B')">
+            <span class="sl">Kịch bản B — Full Services</span>
+            <span class="sd">Resort, Hotel, Large Venue · Concept → Supervision · ~24–28 tuần</span>
+          </div>
+        </div>
+        <input type="hidden" id="scope" value="A"/>
+        <div id="scopeInfo" class="team-box">
+          <strong>Included:</strong> Briefing & Mobilization · Concept Design + Lighting Concept · Schematic Design + Lighting Schematic<br>
+          <strong>Optional:</strong> Design Development / CD / BOQ · Tender Support · Site Supervision<br>
+          <strong>Fee ratio:</strong> Mobilization 15% · Concept 50% · Schematic 35%<br>
+          <strong>Payment:</strong> Upon signing 20% · Concept approval 45% · Schematic approval 35%
+        </div>
+        <div class="divider"></div>
+        <div class="field">
+          <label>Lighting Strategy (tuỳ typology — xuất hiện trong slide 06)</label>
+          <input id="lightingStrategy" placeholder="VD: Dramatic for F&B, functional for business, circadian/calming for Quiet & Wellness"/>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(2)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(4)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S4: ZONING — 🔵 AI PROPOSE -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s4">
+      <div class="sec-head blue-mode">
+        <div class="sec-num">SLIDE 04</div>
+        <div class="sec-title">Indicative Zoning Programme</div>
+        <div class="sec-sub">Nhập diện tích + định hướng → AI đề xuất zoning phù hợp</div>
+        <div class="mode-badge blue">◈ AI Propose — bạn chỉnh sửa sau</div>
+      </div>
+      <div class="sec-body">
+        <!-- AI INPUT -->
+        <div class="ai-panel">
+          <div class="ai-panel-title">◈ AI ZONING ASSISTANT</div>
+          <div class="ai-input-row">
+            <div class="field"><label>Diện tích tổng (m²)</label><input id="aiArea" type="number" placeholder="1400"/></div>
+            <div class="field"><label>Số khách peak</label><input id="aiGuests" type="number" placeholder="190"/></div>
+          </div>
+          <div class="ai-input-row">
+            <div class="field"><label>Typology</label>
+              <select id="aiTypo">
+                <option>Premium / Business Airport Lounge</option>
+                <option>F&B Fine Dining</option>
+                <option>F&B Casual-Premium</option>
+                <option>Gallery / Exhibition Space</option>
+                <option>Boutique Hotel Public Area</option>
+                <option>Wellness / Spa</option>
+              </select>
+            </div>
+            <div class="field"><label>Yêu cầu đặc biệt (nếu có)</label>
+              <input id="aiSpecial" placeholder="VD: cần có shower suite, prayer room, terrace..."/>
+            </div>
+          </div>
+          <button class="btn-ai" id="btnAiZone" onclick="runAI('zone')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            AI đề xuất Zoning
+          </button>
+          <div class="ai-result" id="zoneResult">
+            <div class="ai-result-box">
+              <div class="ai-result-label">KẾT QUẢ ĐỀ XUẤT</div>
+              <div class="ai-result-content" id="zoneResultText"></div>
+            </div>
+            <button class="ai-apply-btn" onclick="applyZoning()">→ Áp dụng vào bảng bên dưới</button>
+          </div>
+        </div>
+
+        <!-- ZONE TABLE (editable) -->
+        <div class="sec-label">Bảng Zoning (chỉnh sửa trực tiếp)</div>
+        <table class="zone-tbl">
+          <thead><tr>
+            <th style="width:28%">ZONE</th>
+            <th style="width:10%">AREA (m²)</th>
+            <th style="width:9%">SEATS</th>
+            <th>OPERATIONAL RATIONALE</th>
+          </tr></thead>
+          <tbody id="zoneTbody"></tbody>
+        </table>
+        <div class="frow c3" style="margin-top:14px">
+          <div class="field"><label>Peak Guests</label><input id="peakGuests" placeholder="190"/></div>
+          <div class="field"><label>m²/Guest Benchmark</label><input id="sqmGuest" value="7" placeholder="7"/></div>
+          <div class="field"><label>Tổng net usable</label><input id="totalAreaDisp" readonly style="background:var(--cream);color:var(--gray)"/></div>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(3)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(5)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S5: DESIGN LANGUAGE — 🔵 AI PROPOSE -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s5">
+      <div class="sec-head blue-mode">
+        <div class="sec-num">SLIDE 05</div>
+        <div class="sec-title">Design Language</div>
+        <div class="sec-sub">Nhập mood direction → AI đề xuất tagline + 3 mood pillars</div>
+        <div class="mode-badge blue">◈ AI Propose — bạn chỉnh sửa sau</div>
+      </div>
+      <div class="sec-body">
+        <div class="ai-panel">
+          <div class="ai-panel-title">◈ AI DESIGN LANGUAGE ASSISTANT</div>
+          <div class="ai-input-row">
+            <div class="field"><label>Định hướng Mood / Aesthetic</label>
+              <input id="moodDir" placeholder="VD: Quiet luxury, Vietnamese contemporary, warm natural materials"/>
+            </div>
+            <div class="field"><label>Tham chiếu thiết kế (nếu có)</label>
+              <input id="moodRef" placeholder="VD: Amanoi, Six Senses, Zuma Dubai"/>
+            </div>
+          </div>
+          <div class="ai-input-row" style="grid-template-columns:1fr">
+            <div class="field"><label>Keywords / Atmosphere words</label>
+              <input id="moodKeywords" placeholder="VD: Warmth, Shadow, Stillness, Ritual, Wabi-sabi, Organic, Earthy"/>
+            </div>
+          </div>
+          <button class="btn-ai" id="btnAiDesign" onclick="runAI('design')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            AI đề xuất Design Language
+          </button>
+          <div class="ai-result" id="designResult">
+            <div class="ai-result-box">
+              <div class="ai-result-label">ĐỀ XUẤT TAGLINE & PILLARS</div>
+              <div class="ai-result-content" id="designResultText"></div>
+            </div>
+            <button class="ai-apply-btn" onclick="applyDesign()">→ Áp dụng</button>
+          </div>
+        </div>
+
+        <div class="sec-label">Tagline & Mood Pillars (chỉnh sửa)</div>
+        <div class="frow c1">
+          <div class="field"><label>Design Tagline (1 dòng)</label>
+            <input id="designTagline" placeholder="VD: Quiet luxury with a Vietnamese soul — warm materials, light from shadow, restraint over display"/>
+          </div>
+        </div>
+        <div class="frow c3">
+          <div class="field">
+            <label>Pillar 1 — Label</label><input id="p1label" value="WELCOME" placeholder="WELCOME"/>
+            <label style="margin-top:8px">Subtitle</label><input id="p1sub" value="ARRIVAL RITUAL · THE HUMAN TOUCH"/>
+          </div>
+          <div class="field">
+            <label>Pillar 2 — Label</label><input id="p2label" value="F&B" placeholder="F&B"/>
+            <label style="margin-top:8px">Subtitle</label><input id="p2sub" value="REFINED · SENSORY · UNHURRIED"/>
+          </div>
+          <div class="field">
+            <label>Pillar 3 — Label</label><input id="p3label" value="SOCIAL" placeholder="SOCIAL"/>
+            <label style="margin-top:8px">Subtitle</label><input id="p3sub" value="WARM · ATMOSPHERIC · CONNECTED"/>
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--gray);margin-top:12px;line-height:1.6">
+          💡 Sau khi tải PPTX, vào PowerPoint thay 3 ô <code>[ MOOD IMAGE ]</code> bằng ảnh dự án thật.
+        </p>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(4)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(6)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S6: LIGHTING — AUTO -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s6">
+      <div class="sec-head auto-mode">
+        <div class="sec-num">SLIDE 06</div>
+        <div class="sec-title">Lighting Design</div>
+        <div class="sec-sub">Nội dung chuẩn H2X — tự động. Chỉ điều chỉnh strategy nếu cần.</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body">
+        <div class="team-box" style="margin-bottom:16px">
+          Slide này có nội dung chuẩn của H2X Studio:<br>
+          <strong>Pull quote:</strong> "Light is not a final layer — it is the atmosphere."<br>
+          <strong>Left col:</strong> 4 lý do tích hợp Lighting từ Concept (cố định)<br>
+          <strong>Right col:</strong> 4 điểm H2X Delivers — điểm đầu tiên sẽ được thay bằng Lighting Strategy bên dưới
+        </div>
+        <div class="field">
+          <label>Lighting Strategy cho dự án này (điều chỉnh theo typology)</label>
+          <input id="lightingStrategy2" placeholder="VD: Dramatic for F&B, functional for business, circadian/calming for Quiet & Wellness"/>
+          <span class="field-hint">Sync với Section 3 — điền 1 lần là đủ</span>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(5)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(7)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S7: TEAM — AUTO -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s7">
+      <div class="sec-head auto-mode">
+        <div class="sec-num">SLIDE 07</div>
+        <div class="sec-title">Project Team</div>
+        <div class="sec-sub">Team chuẩn H2X — tự động. Liên hệ admin nếu cần thay đổi thành viên.</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body">
+        <div class="team-box">
+          <strong>Creative Director</strong> — Gia Huy (Michael) · M.Architect · 23+ yrs · sets vision & design direction<br>
+          <strong>Lead Designer — Concept</strong> — Nguyễn Mạnh Hùng (Henry) · Spatial concept, narrative & guest journey<br>
+          <strong>Lighting Designer (In-house)</strong> — [Lighting Lead] · Atmosphere, fixture & control strategy<br>
+          <strong>Head of FF&E</strong> — Nguyễn Thị Thúy Vy (Vivian) · Furniture, fixtures & material curation<br>
+          <strong>Technical Lead</strong> — Nguyễn Vương Linh (Lucas) · Schematic documentation & consultant coordination<br>
+          <strong>3D Visualisation & PM</strong> — Đỗ Danh Sơn · Photorealistic renders · schedule, reviews & delivery
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(6)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(8)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S8: PROCESS — AUTO -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s8">
+      <div class="sec-head auto-mode">
+        <div class="sec-num">SLIDE 08</div>
+        <div class="sec-title">Design Process & Workflow</div>
+        <div class="sec-sub">Cadence, tools, timeline — tự động theo Scope đã chọn ở Slide 03</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body">
+        <div class="team-box">
+          Nội dung tự điều chỉnh theo <strong>Kịch bản A hoặc B</strong> đã chọn ở Slide 03.<br><br>
+          <strong>Cadence:</strong> First Draft → Consolidated Review → Final Approval → Stage sign-off<br>
+          <strong>Tools:</strong> Revit + Enscape · Photorealistic 3D key views from Concept<br>
+          <strong>Timeline A:</strong> Mobilization ~1 wk · Concept ~4 wks · Schematic ~4 wks = 9–11 wks<br>
+          <strong>Timeline B:</strong> Above + DD ~6 wks · CD/BOQ ~8 wks · Supervision: project duration
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(7)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(9)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S9: FEE — 🔴 USER INPUT -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s9">
+      <div class="sec-head red-mode">
+        <div class="sec-num">SLIDE 09</div>
+        <div class="sec-title">Design Fee</div>
+        <div class="sec-sub">Nhập tổng phí — bảng phân bổ tự tính theo tỉ lệ chuẩn</div>
+        <div class="mode-badge red">● Nhập thông tin</div>
+      </div>
+      <div class="sec-body">
+        <div class="frow c2">
+          <div class="field">
+            <label>Tổng phí Interior + Lighting (USD) *</label>
+            <input id="feeTotal" type="number" placeholder="150000" oninput="calcFee()"/>
+            <span class="field-hint" id="feePerSqm"></span>
+          </div>
+          <div class="field">
+            <label>Ghi chú benchmark (xuất hiện dưới bảng)</label>
+            <input id="feeNote" placeholder="VD: ≈ 107 USD/m² · 1,400 m²"/>
+          </div>
+        </div>
+        <div class="fee-box">
+          <div class="fee-box-title">PHÂN BỔ TỰ ĐỘNG — INTERIOR + LIGHTING</div>
+          <div id="feeBreakdown"></div>
+          <div class="fee-row subtotal">
+            <span>SUBTOTAL (Interior + Lighting)</span>
+            <span class="fee-amt" id="feeSubtotal">—</span>
+          </div>
+          <div class="fee-row grand">
+            <span>TỔNG PHÍ</span>
+            <span class="fee-amt" id="feeGrand">—</span>
+          </div>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(8)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(10)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S10: ADD-ON VALUE — AUTO -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s10">
+      <div class="sec-head auto-mode">
+        <div class="sec-num">SLIDE 10</div>
+        <div class="sec-title">Add-on Workstreams</div>
+        <div class="sec-sub">Branding / Signage / AV — slide value pitch tự động. Chọn add-on ở Slide 11.</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body">
+        <div class="team-box">
+          Slide này tự động generate 3 card:<br>
+          <strong>Brand Identity & Naming</strong> (Ziva) — Naming · Logo · Core identity · Brand guidelines<br>
+          <strong>Signage & Wayfinding</strong> (Ziva) — Bilingual wayfinding · Signage concept · Specification<br>
+          <strong>Audio-Visual Design</strong> (H2X) — Soundscape · AV integration · Zoning of sound<br><br>
+          Slide chỉ xuất hiện nếu có ít nhất 1 add-on được chọn ở Slide 11.
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(9)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(11)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S11: ADD-ON FEE — 🔴 USER INPUT -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s11">
+      <div class="sec-head red-mode">
+        <div class="sec-num">SLIDE 11</div>
+        <div class="sec-title">Add-on Fee Table</div>
+        <div class="sec-sub">Chọn add-on và nhập phí — Grand Total tự tính</div>
+        <div class="mode-badge red">● Nhập thông tin</div>
+      </div>
+      <div class="sec-body">
+        <div class="addon-grid">
+          <div class="addon-card" id="cardBrand" onclick="toggleAddon('Brand')">
+            <div class="addon-hd">
+              <div class="addon-chk" id="chkBrand"></div>
+              <div><div class="addon-title">Brand Identity & Naming</div><div class="addon-partner">Partner: Ziva</div></div>
+            </div>
+            <div class="addon-desc">Naming · Logo · Core identity · Brand guidelines (essentials)</div>
+            <div class="addon-fee">
+              <label>Phí (USD)</label>
+              <input id="feeBrand" type="number" placeholder="19600" onclick="event.stopPropagation()" oninput="calcGrand()"/>
+            </div>
+          </div>
+          <div class="addon-card" id="cardSignage" onclick="toggleAddon('Signage')">
+            <div class="addon-hd">
+              <div class="addon-chk" id="chkSignage"></div>
+              <div><div class="addon-title">Signage & Wayfinding</div><div class="addon-partner">Partner: Ziva</div></div>
+            </div>
+            <div class="addon-desc">Bilingual wayfinding strategy · Signage concept · Specification direction</div>
+            <div class="addon-fee">
+              <label>Phí (USD)</label>
+              <input id="feeSignage" type="number" placeholder="15400" onclick="event.stopPropagation()" oninput="calcGrand()"/>
+            </div>
+          </div>
+          <div class="addon-card" id="cardAV" onclick="toggleAddon('AV')">
+            <div class="addon-hd">
+              <div class="addon-chk" id="chkAV"></div>
+              <div><div class="addon-title">Audio-Visual Design</div><div class="addon-partner">Partner: H2X</div></div>
+            </div>
+            <div class="addon-desc">Signature soundscape · AV & display integration · Zoning of sound by area</div>
+            <div class="addon-fee">
+              <label>Phí (USD)</label>
+              <input id="feeAV" type="number" placeholder="12600" onclick="event.stopPropagation()" oninput="calcGrand()"/>
+            </div>
+          </div>
+        </div>
+        <div class="fee-box" style="margin-top:16px">
+          <div class="fee-box-title">TỔNG KẾT</div>
+          <div class="fee-row"><span>Interior + Lighting</span><span class="fee-amt" id="gtInt">—</span></div>
+          <div class="fee-row"><span>Add-ons (concept stage)</span><span class="fee-amt" id="gtAdd">—</span></div>
+          <div class="fee-row grand">
+            <div>
+              <div>GRAND TOTAL</div>
+              <div style="font-size:10px;font-weight:300;color:var(--gray);margin-top:3px">Excludes taxes & other fees.</div>
+            </div>
+            <span class="fee-amt" id="gtTotal">—</span>
+          </div>
+          <div class="fee-row discount">
+            Early-commitment −10% if signed within 14 days &nbsp;→&nbsp; <strong id="gtDiscount">—</strong>
+          </div>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(10)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(12)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S12: PAYMENT — AUTO -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s12">
+      <div class="sec-head auto-mode">
+        <div class="sec-num">SLIDE 12</div>
+        <div class="sec-title">Payment Schedule</div>
+        <div class="sec-sub">Tự tính theo phí và scope đã nhập</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body">
+        <div id="paymentPreview" class="team-box"></div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(11)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(13)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S13: INCL/EXCL — AUTO -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s13">
+      <div class="sec-head auto-mode">
+        <div class="sec-num">SLIDE 13</div>
+        <div class="sec-title">Inclusions & Exclusions</div>
+        <div class="sec-sub">Nội dung chuẩn H2X — tự động generate</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="team-box">
+            <strong style="color:var(--terra)">INCLUSIONS</strong><br>
+            + Interior design — Concept & Schematic stages<br>
+            + Lighting Design — concept & schematic (in the design fee)<br>
+            + Zoning, narrative, moodboards<br>
+            + 3D key-view renders · material & FF&E palette<br>
+            + Plans, RCP, elevations & outline specifications<br>
+            + Brand, Signage & AV — concept (if selected)
+          </div>
+          <div class="team-box">
+            <strong style="color:var(--gray)">EXCLUSIONS</strong><br>
+            + DD / CD / BOQ (follow-on addendum)<br>
+            + Production of branding, signage & AV beyond concept<br>
+            + MEP, structural & façade engineering<br>
+            + Kitchen, acoustics & fire engineering<br>
+            + Permits · taxes/VAT<br>
+            + Reimbursables: travel, printing, mock-ups
+          </div>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(12)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(14)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S14: TERMS — AUTO -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s14">
+      <div class="sec-head auto-mode">
+        <div class="sec-num">SLIDE 14</div>
+        <div class="sec-title">Terms & Conditions</div>
+        <div class="sec-sub">Điều khoản chuẩn — tự động generate</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body">
+        <div class="team-box" style="line-height:2.2">
+          <strong>Revisions</strong> — First Draft + 1 consolidated review/stage; further rounds by addendum<br>
+          <strong>Site visits</strong> — Up to 3 included; additional at cost<br>
+          <strong>Reimbursables</strong> — Travel, printing & mock-ups at cost with prior approval<br>
+          <strong>Intellectual property</strong> — Design IP transfers upon full settlement<br>
+          <strong>Validity</strong> — Proposal valid 30 days from date of issue<br>
+          <strong>Currency & tax</strong> — All fees in USD, exclusive of VAT<br>
+          <strong>Schedule</strong> — Timeline assumes timely Client feedback at each gate
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(13)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(15)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S15: THANK YOU — 🔴 USER INPUT -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s15">
+      <div class="sec-head red-mode">
+        <div class="sec-num">SLIDE 15</div>
+        <div class="sec-title">Thank You / Contact</div>
+        <div class="sec-sub">Thông tin liên hệ và lời kết trên slide cuối</div>
+        <div class="mode-badge red">● Nhập thông tin</div>
+      </div>
+      <div class="sec-body">
+        <div class="frow c2">
+          <div class="field"><label>Số điện thoại</label><input id="phone" value="+84 9 6652 6662"/></div>
+          <div class="field"><label>Email</label><input id="email" value="info@h2xstudio.com"/></div>
+        </div>
+        <div class="frow c2">
+          <div class="field"><label>Website</label><input id="website" value="www.h2xstudio.com.vn"/></div>
+          <div class="field"><label>Địa chỉ HN</label><input id="addrHN" value="HQ — 26 Trần Hưng Đạo, Hà Nội"/></div>
+        </div>
+        <div class="frow c1">
+          <div class="field"><label>Địa chỉ HCM</label><input id="addrHCM" value="Branch — 199D Nguyễn Văn Hưởng, Thảo Điền, TP HCM"/></div>
+        </div>
+        <div class="frow c1">
+          <div class="field">
+            <label>CTA Text (lời kết — để trống dùng mặc định)</label>
+            <textarea id="ctaText" rows="2" placeholder="We would welcome a working session to walk through the zoning & layout options, align on scope & budget, and confirm the schedule — so we can move into Concept without delay."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(14)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(16)">Xem lại & Generate →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S16: GENERATE -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s16">
+      <div class="sec-head" style="background:#0a1a0a;border-bottom-color:#1a3a1a">
+        <div class="sec-num" style="color:#6dbf6d">GENERATE</div>
+        <div class="sec-title">Xem lại & Xuất PPTX</div>
+        <div class="sec-sub">Kiểm tra tóm tắt, sau đó bấm Generate để tải file về</div>
+        <div class="mode-badge" style="background:#1a3a1a;color:#6dbf6d">⬇ Export PPTX</div>
+      </div>
+      <div class="sec-body">
+        <div id="summaryTable" style="margin-bottom:20px"></div>
+        <div style="text-align:center;padding:24px 0">
+          <button class="btn btn-gen" id="btnGen" onclick="generate()">⬇ Generate & Tải PPTX</button>
+          <div class="ok-msg" id="okMsg">✓ File đã được tạo và tải xuống!</div>
+          <p style="font-size:11px;color:var(--gray);margin-top:14px;line-height:1.7">
+            Font: Playfair Display + SVN-Gilroy · Layout: 13.33"×7.5" (LAYOUT_WIDE)<br>
+            Sau khi tải về, vào PowerPoint thay 3 ô <strong>[ HERO IMAGE ]</strong>, <strong>[ MOOD IMAGE ]</strong>, <strong>[ CLOSING IMAGE ]</strong> bằng ảnh thật.
+          </p>
+        </div>
+      </div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(15)">← Quay lại</button>
+        <span></span>
+      </div>
+    </div>
+
+  </div><!-- end main -->
+</div><!-- end wrap -->
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────
+let cur = 1;
+const TOTAL = 16;
+const sel = {Brand:false, Signage:false, AV:false};
+let aiZoneData = null, aiDesignData = null;
+
+const DEFAULT_ZONES = [
+  {zone:'Welcome & Concierge',       area:'', seats:'',  rationale:'Single access-control point, app/face check-in, welcome ritual; staff sightline over arrival.'},
+  {zone:'Main Social & Relaxation',  area:'', seats:'',  rationale:'Varied seating; apron/runway view on premium row; the social heart.'},
+  {zone:'Premium F&B',               area:'', seats:'',  rationale:'Buffet + show kitchen + bar, adjacent to BOH for shortest service run.'},
+  {zone:'Quiet / Wellness / Recovery',area:'',seats:'',  rationale:'Nap & shower suites, relaxation; acoustically separated at the far end.'},
+  {zone:'Business & Productivity',   area:'', seats:'',  rationale:'Workstations + small meeting room, buffering social and quiet zones.'},
+  {zone:'Amenities (WC / Family / Prayer)',area:'',seats:'',rationale:'Distributed near both social and quiet zones; fully accessible.'},
+  {zone:'Back-of-House',             area:'', seats:'',  rationale:'Kitchen, prep, store, staff, waste — service corridor never crosses guest flow.'},
+  {zone:'Pre-boarding / Exit',       area:'', seats:'',  rationale:'Smooth exit to gate; boarding displays; proactive flight reminders.'},
+];
+
+// ─── NAV ─────────────────────────────────────────────────────────
+function go(n) {
+  document.getElementById(`s${cur}`).classList.remove('active');
+  document.querySelectorAll('.nav-item').forEach(el=>{
+    const s=parseInt(el.dataset.s);
+    el.classList.remove('active');
+    if(s<n) el.classList.add('done'); else el.classList.remove('done');
+    if(s===n) {el.classList.add('active');el.classList.remove('done');}
+  });
+  cur = n;
+  document.getElementById(`s${n}`).classList.add('active');
+  document.getElementById('prog').style.width = Math.round(n/TOTAL*100)+'%';
+  if(n===12) buildPaymentPreview();
+  if(n===16) buildSummary();
+  window.scrollTo(0,0);
+}
+
+// ─── SCOPE ───────────────────────────────────────────────────────
+function setScope(v){
+  document.getElementById('scope').value=v;
+  document.getElementById('scopeA').classList.toggle('active',v==='A');
+  document.getElementById('scopeB').classList.toggle('active',v==='B');
+  const info = v==='A'
+    ? '<strong>Included:</strong> Briefing · Concept+Lighting · Schematic+Lighting<br><strong>Optional:</strong> DD / CD / BOQ · Tender · Supervision<br><strong>Fee ratio:</strong> Mobilization 15% · Concept 50% · Schematic 35%<br><strong>Payment:</strong> Signing 20% · Concept approval 45% · Schematic approval 35%'
+    : '<strong>Included (full):</strong> Briefing · Concept · Schematic · DD · CD+BOQ · Tender · Supervision<br><strong>Fee ratio:</strong> Mob 5% · Concept 20% · Schematic 20% · DD 25% · CD 20% · Supervision 10%<br><strong>Payment:</strong> Signing 10% · Concept 20% · Schematic 20% · DD 20% · CD 20% · Completion 10%';
+  document.getElementById('scopeInfo').innerHTML=info;
+  calcFee();
+}
+
+// ─── FEE CALC ────────────────────────────────────────────────────
+const RATIO_A=[{l:'Briefing & Mobilization',p:.15},{l:'Concept Design (incl. Lighting Concept)',p:.50},{l:'Schematic Design (incl. Lighting Schematic)',p:.35}];
+const RATIO_B=[{l:'Briefing & Mobilization',p:.05},{l:'Concept Design + Lighting',p:.20},{l:'Schematic Design + Lighting',p:.20},{l:'Design Development',p:.25},{l:'Construction Documents + BOQ',p:.20},{l:'Tender Support + Site Supervision',p:.10}];
+
+function calcFee(){
+  const fee=parseFloat(document.getElementById('feeTotal')?.value)||0;
+  const area=parseFloat(document.getElementById('area')?.value)||0;
+  const scope=document.getElementById('scope')?.value||'A';
+  const fmt=n=>n>0?n.toLocaleString('en-US')+' USD':'—';
+  if(area>0&&fee>0) document.getElementById('feePerSqm').textContent=`≈ ${Math.round(fee/area)} USD/m²`;
+  const rows=scope==='B'?RATIO_B:RATIO_A;
+  document.getElementById('feeBreakdown').innerHTML=rows.map(r=>`
+    <div class="fee-row">
+      <span>${r.l} (${Math.round(r.p*100)}%)</span>
+      <span class="fee-amt">${fmt(Math.round(fee*r.p))}</span>
+    </div>`).join('');
+  document.getElementById('feeSubtotal').textContent=fmt(fee);
+  document.getElementById('feeGrand').textContent=fmt(fee);
+  calcGrand();
+}
+
+function calcGrand(){
+  const fmt=n=>n>0?n.toLocaleString('en-US')+' USD':'—';
+  const fee=parseFloat(document.getElementById('feeTotal')?.value)||0;
+  const brand=sel.Brand?(parseFloat(document.getElementById('feeBrand')?.value)||0):0;
+  const sign=sel.Signage?(parseFloat(document.getElementById('feeSignage')?.value)||0):0;
+  const av=sel.AV?(parseFloat(document.getElementById('feeAV')?.value)||0):0;
+  const adds=brand+sign+av, grand=fee+adds;
+  document.getElementById('gtInt').textContent=fmt(fee);
+  document.getElementById('gtAdd').textContent=fmt(adds);
+  document.getElementById('gtTotal').textContent=fmt(grand);
+  document.getElementById('gtDiscount').textContent=fmt(Math.round(grand*.9));
+}
+
+// ─── ADDONS ──────────────────────────────────────────────────────
+function toggleAddon(n){
+  sel[n]=!sel[n];
+  document.getElementById('card'+n).classList.toggle('sel',sel[n]);
+  document.getElementById('chk'+n).classList.toggle('sel',sel[n]);
+  calcGrand();
+}
+
+// ─── ZONE TABLE ──────────────────────────────────────────────────
+function buildZoneTable(zones){
+  const data=zones||DEFAULT_ZONES;
+  document.getElementById('zoneTbody').innerHTML=data.map((z,i)=>`
+    <tr>
+      <td class="zone-name">${z.zone}</td>
+      <td><input type="number" id="za${i}" value="${z.area||''}" placeholder="" oninput="sumArea()"/></td>
+      <td><input id="zs${i}" value="${z.seats||''}" placeholder="—"/></td>
+      <td><input id="zr${i}" value="${z.rationale||''}" style="font-size:11px"/></td>
+    </tr>`).join('')+`
+    <tr>
+      <td>Total (net usable)</td>
+      <td id="zTotalCell" style="font-weight:600;color:var(--terra-dk)"></td>
+      <td></td>
+      <td style="font-size:11px;color:var(--gray)">Circulation (~15%) distributed within each zone.</td>
+    </tr>`;
+  sumArea();
+}
+
+function sumArea(){
+  let t=0;
+  DEFAULT_ZONES.forEach((_,i)=>{ t+=parseFloat(document.getElementById('za'+i)?.value)||0; });
+  const disp=t>0?`~${t.toLocaleString()} m²`:'';
+  document.getElementById('totalAreaDisp').value=disp;
+  const c=document.getElementById('zTotalCell');
+  if(c) c.textContent=disp;
+}
+
+function collectZones(){
+  return DEFAULT_ZONES.map((z,i)=>({
+    zone:z.zone,
+    area:document.getElementById('za'+i)?.value||'',
+    seats:document.getElementById('zs'+i)?.value||'',
+    rationale:document.getElementById('zr'+i)?.value||z.rationale,
+  }));
+}
+
+// ─── AI CALLS ────────────────────────────────────────────────────
+async function runAI(type){
+  if(type==='zone'){
+    const btn=document.getElementById('btnAiZone');
+    btn.classList.add('loading'); btn.textContent='⏳ Đang phân tích...';
+    const payload={
+      area: document.getElementById('aiArea')?.value || document.getElementById('area')?.value || '1400',
+      typology: document.getElementById('aiTypo')?.value || document.getElementById('typology')?.value,
+      mood: document.getElementById('aiSpecial')?.value,
+      location: document.getElementById('location')?.value,
+      projectName: document.getElementById('projectName')?.value,
+    };
+    try{
+      const res=await fetch('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const data=await res.json();
+      aiZoneData=data;
+      // show result
+      const zText=data.zoningProposal?.map(z=>`<strong>${z.zone}</strong>: ${z.area}m² · ${z.seats||'—'} seats — ${z.rationale}`).join('<br><br>')||'Không có dữ liệu';
+      document.getElementById('zoneResultText').innerHTML=zText;
+      document.getElementById('zoneResult').classList.add('show');
+    }catch(e){alert('Lỗi AI: '+e.message);}
+    btn.classList.remove('loading'); btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> AI đề xuất Zoning';
+  }
+
+  if(type==='design'){
+    const btn=document.getElementById('btnAiDesign');
+    btn.classList.add('loading'); btn.textContent='⏳ Đang phân tích...';
+    const payload={
+      area: document.getElementById('area')?.value,
+      typology: document.getElementById('typology')?.value,
+      mood: document.getElementById('moodDir')?.value,
+      location: document.getElementById('location')?.value,
+      projectName: document.getElementById('projectName')?.value,
+    };
+    try{
+      const res=await fetch('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const data=await res.json();
+      aiDesignData=data;
+      const txt=`<strong>Tagline:</strong> ${data.designTagline||'—'}<br><br>`+
+        `<strong>Pillar 1:</strong> ${data.designPillar1?.label} — ${data.designPillar1?.sub}<br>`+
+        `<strong>Pillar 2:</strong> ${data.designPillar2?.label} — ${data.designPillar2?.sub}<br>`+
+        `<strong>Pillar 3:</strong> ${data.designPillar3?.label} — ${data.designPillar3?.sub}<br><br>`+
+        `<strong>Lighting:</strong> ${data.lightingStrategy||'—'}<br><br>`+
+        `<strong>Fee range:</strong> ${data.feeRangeLow?.toLocaleString()||'—'} – ${data.feeRangeHigh?.toLocaleString()||'—'} USD`;
+      document.getElementById('designResultText').innerHTML=txt;
+      document.getElementById('designResult').classList.add('show');
+    }catch(e){alert('Lỗi AI: '+e.message);}
+    btn.classList.remove('loading'); btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> AI đề xuất Design Language';
+  }
+}
+
+function applyZoning(){
+  if(!aiZoneData?.zoningProposal) return;
+  const zones=aiZoneData.zoningProposal;
+  zones.forEach((z,i)=>{
+    if(i>=DEFAULT_ZONES.length) return;
+    if(document.getElementById('za'+i)) document.getElementById('za'+i).value=z.area||'';
+    if(document.getElementById('zs'+i)) document.getElementById('zs'+i).value=z.seats||'';
+    if(document.getElementById('zr'+i)) document.getElementById('zr'+i).value=z.rationale||DEFAULT_ZONES[i].rationale;
+  });
+  sumArea();
+  if(aiZoneData.peakGuests) document.getElementById('peakGuests').value=aiZoneData.peakGuests;
+}
+
+function applyDesign(){
+  if(!aiDesignData) return;
+  if(aiDesignData.designTagline) document.getElementById('designTagline').value=aiDesignData.designTagline;
+  if(aiDesignData.designPillar1){ document.getElementById('p1label').value=aiDesignData.designPillar1.label||''; document.getElementById('p1sub').value=aiDesignData.designPillar1.sub||''; }
+  if(aiDesignData.designPillar2){ document.getElementById('p2label').value=aiDesignData.designPillar2.label||''; document.getElementById('p2sub').value=aiDesignData.designPillar2.sub||''; }
+  if(aiDesignData.designPillar3){ document.getElementById('p3label').value=aiDesignData.designPillar3.label||''; document.getElementById('p3sub').value=aiDesignData.designPillar3.sub||''; }
+  if(aiDesignData.lightingStrategy){
+    document.getElementById('lightingStrategy').value=aiDesignData.lightingStrategy;
+    document.getElementById('lightingStrategy2').value=aiDesignData.lightingStrategy;
+  }
+  if(aiDesignData.opportunity) document.getElementById('opportunity').value=aiDesignData.opportunity;
+  if(aiDesignData.feeRangeLow&&!document.getElementById('feeTotal').value){
+    const mid=Math.round((aiDesignData.feeRangeLow+aiDesignData.feeRangeHigh)/2/5000)*5000;
+    document.getElementById('feeTotal').value=mid; calcFee();
+  }
+}
+
+// ─── PAYMENT PREVIEW ─────────────────────────────────────────────
+function buildPaymentPreview(){
+  const fee=parseFloat(document.getElementById('feeTotal')?.value)||0;
+  const scope=document.getElementById('scope')?.value||'A';
+  const fmt=n=>n>0?n.toLocaleString('en-US')+' USD':'—';
+  const pmtA=[{m:'Khi ký Hợp đồng — huy động nhóm',p:.20},{m:'Phê duyệt Concept Design',p:.45},{m:'Phê duyệt Schematic Design',p:.35}];
+  const pmtB=[{m:'Khi ký Hợp đồng',p:.10},{m:'Phê duyệt Concept',p:.20},{m:'Phê duyệt Schematic',p:.20},{m:'Phê duyệt Design Development',p:.20},{m:'Giao Construction Documents',p:.20},{m:'Hoàn thành / Final Supervision',p:.10}];
+  const rows=scope==='B'?pmtB:pmtA;
+  document.getElementById('paymentPreview').innerHTML=
+    rows.map((r,i)=>`<strong>${i+1}. ${r.m}</strong> — ${Math.round(r.p*100)}% = ${fmt(Math.round(fee*r.p))}<br>`).join('')+
+    `<br><strong>Tổng: ${fmt(fee)}</strong><br><br>Add-on workstreams: 50% khi kick-off, 50% khi giao sản phẩm.`;
+}
+
+// ─── SUMMARY ─────────────────────────────────────────────────────
+function buildSummary(){
+  const g=id=>document.getElementById(id)?.value||'';
+  const fee=parseFloat(g('feeTotal'))||0;
+  const adds=(sel.Brand?parseFloat(g('feeBrand'))||0:0)+(sel.Signage?parseFloat(g('feeSignage'))||0:0)+(sel.AV?parseFloat(g('feeAV'))||0:0);
+  const fmt=n=>n>0?n.toLocaleString('en-US')+' USD':'—';
+  document.getElementById('summaryTable').innerHTML=`
+    <table class="summary-tbl">
+      <tr><td class="label">Dự án</td><td class="value">${g('projectName')||'—'}</td></tr>
+      <tr><td class="label">Khách hàng</td><td class="value">${g('clientName')||'—'}</td></tr>
+      <tr><td class="label">Địa điểm</td><td class="value">${g('location')||'—'}</td></tr>
+      <tr><td class="label">Typology</td><td class="value">${g('typology')||'—'}</td></tr>
+      <tr><td class="label">Diện tích</td><td class="value">~${g('area')||'—'} m²</td></tr>
+      <tr><td class="label">Scope</td><td class="value">${g('scope')==='B'?'Kịch bản B — Full Services':'Kịch bản A — Concept → Schematic'}</td></tr>
+      <tr><td class="label">Interior + Lighting</td><td class="value" style="color:var(--terra-dk);font-weight:600">${fmt(fee)}</td></tr>
+      <tr><td class="label">Add-ons</td><td class="value">${(sel.Brand||sel.Signage||sel.AV)?fmt(adds):'Không chọn'}</td></tr>
+      <tr><td class="label">Grand Total</td><td class="value highlight">${fmt(fee+adds)}</td></tr>
+      <tr><td class="label">Số slides PPTX</td><td class="value">${(sel.Brand||sel.Signage||sel.AV)?'17 slides (có Add-on)':'15 slides'}</td></tr>
+    </table>`;
+}
+
+// ─── GENERATE ────────────────────────────────────────────────────
+async function generate(){
+  const btn=document.getElementById('btnGen');
+  btn.classList.add('busy'); btn.textContent='⏳ Đang tạo file...';
+  const g=id=>document.getElementById(id)?.value||'';
+
+  const data={
+    projectName:g('projectName'), clientName:g('clientName'),
+    location:g('location'), typology:g('typology'), area:g('area'),
+    version:g('version')||'01', month:g('month')||'JUNE 2026',
+    opportunity:g('opportunity'), experienceIntent:g('experienceIntent'),
+    targetGuest:g('targetGuest'), whyH2x:g('whyH2x'),
+    scope:g('scope'), lightingStrategy:g('lightingStrategy')||g('lightingStrategy2'),
+    zones:collectZones(), peakGuests:g('peakGuests'), sqmPerGuest:g('sqmGuest')||'7',
+    designTagline:g('designTagline'),
+    designPillars:[
+      {label:g('p1label'),sub:g('p1sub')},
+      {label:g('p2label'),sub:g('p2sub')},
+      {label:g('p3label'),sub:g('p3sub')},
+    ],
+    feeTotal:g('feeTotal'), feeNote:g('feeNote'),
+    addBrand:sel.Brand, addSignage:sel.Signage, addAV:sel.AV,
+    feeBrand:sel.Brand?g('feeBrand'):'0',
+    feeSignage:sel.Signage?g('feeSignage'):'0',
+    feeAV:sel.AV?g('feeAV'):'0',
+    phone:g('phone'), email:g('email'), website:g('website'),
+    ctaText:g('ctaText'), addressHN:g('addrHN'), addressHCM:g('addrHCM'),
+  };
+
+  try{
+    const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    if(!res.ok) throw new Error(await res.text());
+    const blob=await res.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=`H2X_FeeProposal_${(data.projectName||'Project').replace(/\s+/g,'_')}_v${data.version}.pptx`;
+    a.click(); URL.revokeObjectURL(url);
+    document.getElementById('okMsg').classList.add('show');
+    btn.textContent='✓ Tải lại file';
+    btn.classList.remove('busy');
+  }catch(e){
+    alert('Lỗi: '+e.message);
+    btn.textContent='⬇ Generate & Tải PPTX';
+    btn.classList.remove('busy');
+  }
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────
+buildZoneTable();
+calcFee();
+</script>
+</body>
+</html>
