@@ -42,8 +42,12 @@ Based on this, provide structured recommendations in JSON format ONLY (no markdo
 Zones must sum to approximately ${area || 1400} m². Include 8 zones: Welcome/Entry, Main Social/Lounge, F&B/Bar, Quiet/Wellness, Business/Productivity, Amenities, Back-of-House, Transition/Exit. The last zone should have remaining area. Return ONLY valid JSON.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+  method: 'POST',
+  headers: { 
+    'Content-Type': 'application/json',
+    'x-api-key': process.env.ANTHROPIC_API_KEY,
+    'anthropic-version': '2023-06-01'
+  },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 1500,
