@@ -126,7 +126,7 @@ Return ONLY this JSON (no markdown, no backticks, no text before/after):
         }],
         messages: [{
           role: 'user',
-          content: `First search for "${searchContext}" to get current best practices, then use that research to answer:\n\n${prompt}`
+          content: prompt
         }]
       })
     });
