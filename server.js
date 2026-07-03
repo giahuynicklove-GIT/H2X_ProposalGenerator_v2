@@ -71,15 +71,6 @@ const ZONE_TEMPLATES = {
   ]
 };
 
-const TYPOLOGY_CONTEXT = {
-  'Premium / Business Airport Lounge': 'premium airport business lounge design zoning programme best practices 2024',
-  'F&B Fine Dining': 'fine dining restaurant interior design zoning space planning best practices Michelin',
-  'F&B Casual-Premium': 'casual premium restaurant interior design space planning zones layout',
-  'Gallery / Exhibition Space': 'art gallery exhibition space interior design zoning programme',
-  'Boutique Hotel Public Area': 'boutique hotel lobby lounge public area interior design zoning',
-  'Wellness / Spa': 'luxury spa wellness center interior design zoning space planning'
-};
-
 // ─── AI RESEARCH ENDPOINT ────────────────────────────────────────
 app.post('/api/research', async (req, res) => {
   const { area, typology, mood, location, projectName } = req.body;
@@ -92,7 +83,6 @@ app.post('/api/research', async (req, res) => {
   // Get correct zones for this typology
   const zones = ZONE_TEMPLATES[typology] || ZONE_TEMPLATES['Premium / Business Airport Lounge'];
   const zoneList = zones.join(', ');
-  const searchContext = TYPOLOGY_CONTEXT[typology] || typology;
 
   try {
     const prompt = `You are an expert hospitality interior designer and space planner at H2X Studio Vietnam, specializing in ${typology} projects.
