@@ -4,22 +4,22 @@ const fs = require('fs');
 const { generateProposal } = require('./generatePptx');
 
 const app = express();
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── TYPOLOGY ZONE TEMPLATES ─────────────────────────────────────
 const ZONE_TEMPLATES = {
-  'Premium / Business Airport Lounge': [
-    'Welcome & Concierge',
-    'Main Lounge & Relaxation',
-    'Premium F&B / Bar',
-    'Quiet & Wellness Zone',
-    'Business & Productivity',
-    'Amenities (WC / Shower / Prayer)',
+  'Hotel & Resort': [
+    'Lobby & Arrival',
+    'Lounge & All-day Dining',
+    'Signature Restaurant / Bar',
+    'Pool & Outdoor Leisure',
+    'Spa & Fitness',
+    'Meeting & Event Space',
     'Back-of-House',
-    'Pre-boarding / Exit'
+    'Guest Circulation & Lift Lobby'
   ],
-  'F&B Fine Dining': [
+  'F&B Restaurant': [
     'Entry & Reception / Host Stand',
     'Main Dining Room',
     'Private Dining Room (VIP)',
@@ -29,37 +29,37 @@ const ZONE_TEMPLATES = {
     'Back-of-House / Kitchen',
     'Staff & Service Corridor'
   ],
-  'F&B Casual-Premium': [
-    'Entry & Waiting Area',
-    'Main Dining Floor',
-    'Bar & Social Counter',
-    'Outdoor / Terrace Dining',
-    'Private / Semi-private Section',
+  'Lounge & Club': [
+    'Entry & Welcome',
+    'Main Lounge & Social',
+    'F&B / Bar Counter',
+    'VIP / Members Area',
+    'Live Entertainment / DJ Zone',
     'Amenities (WC)',
-    'Back-of-House / Kitchen',
-    'Storage & Staff Area'
-  ],
-  'Gallery / Exhibition Space': [
-    'Entry & Welcome / Reception',
-    'Main Gallery Floor',
-    'Featured / Highlight Gallery',
-    'Collector Lounge & VIP Area',
-    'Education & Workshop Space',
-    'Amenities (WC)',
-    'Back-of-House / Storage',
-    'Loading & Art Handling'
-  ],
-  'Boutique Hotel Public Area': [
-    'Lobby & Check-in',
-    'Lounge & Social Area',
-    'F&B / All-day Dining',
-    'Bar & Evening Lounge',
-    'Fitness & Wellness',
-    'Amenities (WC / Concierge)',
     'Back-of-House',
-    'Arrival / Departure Zone'
+    'Smoking / Outdoor Terrace'
   ],
-  'Wellness / Spa': [
+  'Airport & Transit Lounge': [
+    'Welcome & Concierge',
+    'Main Lounge & Relaxation',
+    'Premium F&B / Bar',
+    'Quiet & Wellness Zone',
+    'Business & Productivity',
+    'Amenities (WC / Shower / Prayer)',
+    'Back-of-House',
+    'Pre-boarding / Exit'
+  ],
+  'Private Banking & VIP Lounge': [
+    'Reception & Concierge',
+    'Private Client Lounge',
+    'Meeting / Advisory Rooms',
+    'F&B & Refreshment Bar',
+    'Executive Board Room',
+    'Amenities (WC / Cloakroom)',
+    'Back-of-House / Vault Support',
+    'Discreet Client Entry / Exit'
+  ],
+  'Wellness & Spa': [
     'Reception & Welcome Ritual',
     'Relaxation Lounge',
     'Treatment Rooms',
@@ -68,21 +68,87 @@ const ZONE_TEMPLATES = {
     'Amenities (Changing / Lockers)',
     'Back-of-House / Staff',
     'Product Retail & Exit'
+  ],
+  'Luxury Retail & Showroom': [
+    'Storefront & Entry Display',
+    'Main Sales Floor',
+    'VIP / Private Shopping Suite',
+    'Product Feature / Hero Display',
+    'Fitting / Consultation Rooms',
+    'Amenities (WC / Lounge)',
+    'Back-of-House / Stockroom',
+    'Staff & Service Entry'
+  ],
+  'Gallery & Event Space': [
+    'Entry & Welcome / Reception',
+    'Main Gallery / Exhibition Floor',
+    'Featured / Highlight Space',
+    'Collector / VIP Lounge',
+    'Multi-purpose Event Hall',
+    'Amenities (WC)',
+    'Back-of-House / Storage',
+    'Loading & Handling'
+  ],
+  'Workplace & Experience Center': [
+    'Reception & Brand Welcome',
+    'Open Workspace / Collaboration',
+    'Experience / Showcase Zone',
+    'Meeting & Conference Rooms',
+    'Breakout & Café Lounge',
+    'Amenities (WC / Wellness Room)',
+    'Back-of-House / IT & Storage',
+    'Staff Circulation'
+  ],
+  'Villa & Mansion': [
+    'Entry Foyer & Arrival',
+    'Living & Family Room',
+    'Dining & Kitchen',
+    'Master Suite',
+    'Guest Bedrooms',
+    'Outdoor / Garden & Pool',
+    'Back-of-House / Staff Quarters',
+    'Garage & Service Entry'
+  ],
+  'Penthouse & Duplex': [
+    'Entry Foyer & Arrival',
+    'Living & Social Level',
+    'Dining & Open Kitchen',
+    'Master Suite & Walk-in',
+    'Private Terrace / Sky Lounge',
+    'Guest Suite(s)',
+    'Home Office / Media Room',
+    'Back-of-House / Utility'
+  ],
+  'Mixed-use & Lifestyle Development': [
+    'Main Entry & Arrival Plaza',
+    'Retail / F&B Frontage',
+    'Lobby & Concierge',
+    'Shared Amenity / Clubhouse',
+    'Co-working / Community Space',
+    'Amenities (WC / Wellness)',
+    'Back-of-House / Loading',
+    'Vertical Circulation & Lift Core'
   ]
 };
 
 const TYPOLOGY_CONTEXT = {
-  'Premium / Business Airport Lounge': 'premium airport business lounge design zoning programme best practices 2024',
-  'F&B Fine Dining': 'fine dining restaurant interior design zoning space planning best practices Michelin',
-  'F&B Casual-Premium': 'casual premium restaurant interior design space planning zones layout',
-  'Gallery / Exhibition Space': 'art gallery exhibition space interior design zoning programme',
-  'Boutique Hotel Public Area': 'boutique hotel lobby lounge public area interior design zoning',
-  'Wellness / Spa': 'luxury spa wellness center interior design zoning space planning'
+  'Hotel & Resort': 'luxury hotel resort public area interior design zoning programme best practices',
+  'F&B Restaurant': 'fine dining restaurant interior design zoning space planning best practices Michelin',
+  'Lounge & Club': 'nightlife lounge club interior design zoning space planning best practices',
+  'Airport & Transit Lounge': 'premium airport transit lounge design zoning programme best practices',
+  'Private Banking & VIP Lounge': 'private banking VIP client lounge interior design zoning best practices',
+  'Wellness & Spa': 'luxury spa wellness center interior design zoning space planning',
+  'Luxury Retail & Showroom': 'luxury retail flagship showroom interior design zoning space planning',
+  'Gallery & Event Space': 'art gallery exhibition event space interior design zoning programme',
+  'Workplace & Experience Center': 'corporate workplace brand experience center interior design zoning',
+  'Villa & Mansion': 'luxury villa mansion residential interior design space planning',
+  'Penthouse & Duplex': 'luxury penthouse duplex residential interior design space planning',
+  'Mixed-use & Lifestyle Development': 'mixed-use lifestyle development interior design zoning master planning'
 };
 
 // ─── AI RESEARCH ENDPOINT ────────────────────────────────────────
 app.post('/api/research', async (req, res) => {
-  const { area, typology, mood, location, projectName } = req.body;
+  const { area, typology, mood, location, projectName, description } = req.body;
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -90,7 +156,7 @@ app.post('/api/research', async (req, res) => {
   }
 
   // Get correct zones for this typology
-  const zones = ZONE_TEMPLATES[typology] || ZONE_TEMPLATES['Premium / Business Airport Lounge'];
+  const zones = ZONE_TEMPLATES[typology] || ZONE_TEMPLATES['Hotel & Resort'];
   const zoneList = zones.join(', ');
   const searchContext = TYPOLOGY_CONTEXT[typology] || typology;
 
@@ -103,6 +169,7 @@ PROJECT BRIEF:
 - Location: ${location || 'Vietnam'}
 - Total Area: ~${area || '1400'} m²
 - Mood/Direction: ${mood || 'Contemporary luxury'}
+${description ? `- Additional Description (from client): ${description}\n  → Use this description to refine the zoning and design direction below. If it describes a space that differs from the standard ${typology} template (e.g. a hybrid or unusual programme), let it override generic assumptions — the 8 mandatory zone NAMES below still apply structurally, but re-interpret their sizing, rationale, and design direction around what the client actually described.` : ''}
 
 TASK: Based on best practices for ${typology} interior design (referencing international standards, Michelin-starred restaurants, award-winning hospitality projects), propose a zoning programme and design direction.
 
@@ -115,10 +182,12 @@ RULES:
 3. Seats/capacity must be realistic for each zone type (fine dining: 1.8-2.5 m²/cover, lounge: 4-6 m²/person)
 4. Rationale must reflect operational best practices specific to ${typology}
 5. Design language must suit ${typology} — NOT generic hospitality
+6. designPillar1/2/3 must be the THREE most important experiential or operational moments for THIS SPECIFIC typology — chosen freely, not a fixed template. Do NOT default to a generic "arrival → main activity → departure" journey unless that framing genuinely fits the typology (e.g. it fits an airport lounge, but a fine-dining restaurant has no "departure" moment worth a pillar — better choices there might be arrival/hospitality, the dining experience itself, and something else operationally central like the bar, service ritual, or kitchen theatre). Pick whatever three pillars best represent what makes THIS typology's design distinctive.
+7. lightingStrategy MUST be a single short sentence (max ~20 words). It renders in a small fixed-size box next to three other one-line bullets — a long or multi-sentence answer will visually overflow and overlap other text on the slide. Keep it as brief as the other bullets, not a technical spec.
 
 Return ONLY this JSON (no markdown, no backticks, no text before/after):
 
-{"zoningProposal":[{"zone":"${zones[0]}","area":150,"seats":20,"rationale":"Specific operational rationale for this zone in ${typology}"},{"zone":"${zones[1]}","area":400,"seats":80,"rationale":"..."},{"zone":"${zones[2]}","area":200,"seats":40,"rationale":"..."},{"zone":"${zones[3]}","area":120,"seats":20,"rationale":"..."},{"zone":"${zones[4]}","area":80,"seats":10,"rationale":"..."},{"zone":"${zones[5]}","area":80,"seats":0,"rationale":"..."},{"zone":"${zones[6]}","area":250,"seats":0,"rationale":"..."},{"zone":"${zones[7]}","area":120,"seats":0,"rationale":"..."}],"designTagline":"Compelling one-line aesthetic direction for this ${typology}","designPillar1":{"label":"ARRIVAL","sub":"3 EVOCATIVE WORDS"},"designPillar2":{"label":"DINING","sub":"3 EVOCATIVE WORDS"},"designPillar3":{"label":"DEPARTURE","sub":"3 EVOCATIVE WORDS"},"lightingStrategy":"Specific lighting strategy for ${typology} — reference actual techniques","opportunity":"2-3 sentences about why this ${typology} project matters in this market","experienceIntent":"2-3 sentences describing the guest journey specific to ${typology}","whyH2X":"2 sentences about H2X Studio expertise in ${typology} projects","feeRangeLow":${Math.round(parseFloat(area||1400) * 80)},"feeRangeHigh":${Math.round(parseFloat(area||1400) * 120)}}`;
+{"zoningProposal":[{"zone":"${zones[0]}","area":150,"seats":20,"rationale":"Specific operational rationale for this zone in ${typology}"},{"zone":"${zones[1]}","area":400,"seats":80,"rationale":"..."},{"zone":"${zones[2]}","area":200,"seats":40,"rationale":"..."},{"zone":"${zones[3]}","area":120,"seats":20,"rationale":"..."},{"zone":"${zones[4]}","area":80,"seats":10,"rationale":"..."},{"zone":"${zones[5]}","area":80,"seats":0,"rationale":"..."},{"zone":"${zones[6]}","area":250,"seats":0,"rationale":"..."},{"zone":"${zones[7]}","area":120,"seats":0,"rationale":"..."}],"designTagline":"Compelling one-line aesthetic direction for this ${typology}","designPillar1":{"label":"LABEL SPECIFIC TO THIS TYPOLOGY'S MOST IMPORTANT MOMENT","sub":"3 EVOCATIVE WORDS"},"designPillar2":{"label":"LABEL FOR THE SECOND MOST IMPORTANT MOMENT","sub":"3 EVOCATIVE WORDS"},"designPillar3":{"label":"LABEL FOR THE THIRD MOST IMPORTANT MOMENT","sub":"3 EVOCATIVE WORDS"},"lightingStrategy":"ONE short sentence (max ~20 words) — a specific lighting technique for ${typology}, same length as a single bullet point, NOT a multi-sentence explanation","opportunity":"2-3 sentences about why this ${typology} project matters in this market","experienceIntent":"2-3 sentences describing the guest journey specific to ${typology}","whyH2X":"2 sentences about H2X Studio expertise in ${typology} projects","feeRangeLow":${Math.round(parseFloat(area||1400) * 80)},"feeRangeHigh":${Math.round(parseFloat(area||1400) * 120)}}`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -164,7 +233,10 @@ Return ONLY this JSON (no markdown, no backticks, no text before/after):
       if (data2.error) return res.status(500).json({ error: data2.error.message });
       const text2 = data2.content?.[0]?.text || '{}';
       const clean2 = text2.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      return res.json(JSON.parse(clean2));
+      const parsed2 = JSON.parse(clean2);
+      parsed2._zoneTemplate = zones;
+      parsed2._typology = typology;
+      return res.json(parsed2);
     }
 
     // Extract text from response (may include tool_use blocks)
@@ -231,7 +303,7 @@ app.post('/api/generate', async (req, res) => {
 // ─── ZONE TEMPLATE ENDPOINT ──────────────────────────────────────
 app.get('/api/zones/:typology', (req, res) => {
   const typology = decodeURIComponent(req.params.typology);
-  const zones = ZONE_TEMPLATES[typology] || ZONE_TEMPLATES['Premium / Business Airport Lounge'];
+  const zones = ZONE_TEMPLATES[typology] || ZONE_TEMPLATES['Hotel & Resort'];
   res.json({ zones });
 });
 
