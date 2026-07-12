@@ -62,35 +62,61 @@ const SZ = {
 // Design Fee, and Document Issue Schedule always stay in sync.
 function getStageDefs(scope) {
   if (scope === 'B') {
-    // Full service, no lighting bundled — lighting fully separate/optional
+    // Full service, no lighting — Lighting offered separately as an add-on
     return [
-      { stage: 'Briefing & Mobilization', weeks: 1, ratio: 5 },
-      { stage: 'Concept Design', weeks: 4, ratio: 20 },
-      { stage: 'Schematic Design', weeks: 3, ratio: 20 },
-      { stage: 'Design Development', weeks: 4, ratio: 25 },
-      { stage: 'Construction Documents + BOQ', weeks: 4, ratio: 20 },
-      { stage: 'Tender Support + Site Supervision', weeks: 3, ratio: 10 },
+      { stage: 'Appraisal and Briefing', weeks: 1, ratio: 15 },
+      { stage: 'Feasibility & Preliminary Concept', weeks: 2, ratio: 20 },
+      { stage: 'Final Concept', weeks: 4, ratio: 20 },
+      { stage: 'Schematic Design', weeks: 4, ratio: 15 },
+      { stage: 'Design Development', weeks: 4, ratio: 10 },
+      { stage: 'Construction Documents', weeks: 6, ratio: 10 },
+      { stage: 'BOQ (Bill of Quantity)', weeks: 3, ratio: 5 },
+      { stage: 'Author Supervision', weeks: 4, ratio: 5 },
     ];
   }
   if (scope === 'C') {
-    // Full service, Lighting bundled (optional) into Concept stage
+    // Full service, Lighting bundled (optional) into Final Concept stage
     return [
-      { stage: 'Briefing & Mobilization', weeks: 1, ratio: 5 },
-      { stage: 'Concept Design + Lighting (Optional)', weeks: 4, ratio: 20 },
-      { stage: 'Schematic Design', weeks: 3, ratio: 20 },
-      { stage: 'Design Development', weeks: 4, ratio: 25 },
-      { stage: 'Construction Documents + BOQ', weeks: 4, ratio: 20 },
-      { stage: 'Tender Support + Site Supervision', weeks: 3, ratio: 10 },
+      { stage: 'Appraisal and Briefing', weeks: 1, ratio: 15 },
+      { stage: 'Feasibility & Preliminary Concept', weeks: 2, ratio: 20 },
+      { stage: 'Final Concept + Lighting (Optional)', weeks: 4, ratio: 20 },
+      { stage: 'Schematic Design', weeks: 4, ratio: 15 },
+      { stage: 'Design Development', weeks: 4, ratio: 10 },
+      { stage: 'Construction Documents', weeks: 6, ratio: 10 },
+      { stage: 'BOQ (Bill of Quantity)', weeks: 3, ratio: 5 },
+      { stage: 'Author Supervision', weeks: 4, ratio: 5 },
     ];
   }
   // 'A' (default) — Concept → Schematic only
   return [
-    { stage: 'Briefing & Mobilization', weeks: 1, ratio: 15 },
-    { stage: 'Concept Design + Lighting (Optional)', weeks: 4, ratio: 50 },
-    { stage: 'Schematic Design', weeks: 3, ratio: 35 },
+    { stage: 'Appraisal and Briefing', weeks: 1, ratio: 15 },
+    { stage: 'Feasibility & Preliminary Concept', weeks: 2, ratio: 20 },
+    { stage: 'Final Concept + Lighting (Optional)', weeks: 4, ratio: 30 },
+    { stage: 'Schematic Design', weeks: 4, ratio: 35 },
   ];
 }
 
+// Optional (not included in the base fee) items shown per scope on Scope of Services
+function getOptionalItems(scope) {
+  if (scope === 'A') {
+    return ['Design Development', 'Construction Documents', 'BOQ (Bill of Quantity)', 'Author Supervision'];
+  }
+  return []; // B and C already include the full scope through Author Supervision
+}
+
+
+// Short description per canonical stage name — reused across Design Process & Workflow and other slides
+const STAGE_DESC = {
+  'Appraisal and Briefing': 'Kick-off, brief alignment, site assessment — the foundation for everything that follows.',
+  'Feasibility & Preliminary Concept': 'Feasibility & operational assessment, adjusted floor plan, mood & feeling direction.',
+  'Final Concept + Lighting (Optional)': 'Concept statement, final layout, moodboard, 3D key views — lighting concept optional.',
+  'Final Concept': 'Concept statement, final layout, moodboard, 3D key views, material palette.',
+  'Schematic Design': 'Annotated plans, RCP & floor-finish plans, key elevations, outline specification.',
+  'Design Development': 'Detailed drawings, material schedules, FF&E specifications.',
+  'Construction Documents': 'Full CD set, coordinated with consultants, ready for tender.',
+  'BOQ (Bill of Quantity)': 'Tender-ready bill of quantities.',
+  'Author Supervision': 'Bid review, RFI responses, site visits through to completion.',
+};
 
 function makePres() {
   const pres = new pptxgen();
@@ -208,16 +234,18 @@ function bodyText(s, text, x, y, w, h, bold = false, color = null) {
 }
 
 // Table header row — black bg, white Toma Sans Light spaced caps
-function tblHeader(s, cells, y, rowH = 0.35) {
+function tblHeader(s, cells, y, rowH = 0.35, region = null) {
+  const rx = region ? region.x : ML;
+  const rw = region ? region.w : CW;
   s.addShape('rect', {
-    x: ML, y, w: CW, h: rowH,
+    x: rx, y, w: rw, h: rowH,
     fill: { color: C.black }, line: { color: C.black, width: 0 },
   });
   cells.forEach(cell => {
     s.addText(cell.text, {
       x: cell.x, y: y + 0.05, w: cell.w, h: rowH - 0.08,
-      fontSize: SZ.label, fontFace: F.light, color: C.white,
-      charSpacing: 1.5, margin: 0, valign: 'middle',
+      fontSize: cell.fontSize || SZ.label, fontFace: F.light, color: C.white,
+      charSpacing: cell.fontSize ? 0.5 : 1.5, margin: 0, valign: 'middle',
       align: cell.align || 'left',
     });
   });
@@ -380,48 +408,72 @@ function slide03(pres, d) {
   slideTitle(s, 'Scope of Services', subtitles[scope] || subtitles.A);
 
   const stagesA = [
-    { stage: 'Briefing & Mobilization', status: '✓ Included', desc: 'Kick-off, brief alignment, A&B material review, site assessment.' },
-    { stage: 'Concept Design + Lighting (Optional)', status: '✓ Included', desc: 'Zoning & space planning, design narrative, moodboards, 3D key views, material palette. Lighting concept offered as optional add-on.' },
+    { stage: 'Appraisal and Briefing', status: '✓ Included', desc: 'Kick-off, brief alignment, A&B material review, site assessment.' },
+    { stage: 'Feasibility & Preliminary Concept', status: '✓ Included', desc: 'Feasibility & operational assessment, adjusted concept floor plan, mood & feeling recommendations.' },
+    { stage: 'Final Concept + Lighting (Optional)', status: '✓ Included', desc: 'Concept statement, final layout, moodboard, 3D key views, material palette. Lighting concept offered as optional add-on.' },
     { stage: 'Schematic Design', status: '✓ Included', desc: 'Annotated plans, RCP & floor-finish plans, key elevations, outline specification schedules.' },
     { stage: 'Design Development · Construction Documents · BOQ', status: 'Optional', desc: 'Available as a follow-on package — fees proposed by addendum at the agreed rate once Schematic is approved.' },
-    { stage: 'Tender Support · Site Supervision', status: 'Optional', desc: 'Offered separately on request.' },
+    { stage: 'Author Supervision', status: 'Optional', desc: 'Offered separately on request once the project moves into construction.' },
   ];
   const stagesB = [
-    { stage: 'Briefing & Mobilization', status: '✓ Included', desc: 'Kick-off, brief alignment, A&B material review, site assessment.' },
-    { stage: 'Concept Design', status: '✓ Included', desc: 'Zoning & space planning, design narrative, moodboards, 3D key views, material palette.' },
+    { stage: 'Appraisal and Briefing', status: '✓ Included', desc: 'Kick-off, brief alignment, A&B material review, site assessment.' },
+    { stage: 'Feasibility & Preliminary Concept', status: '✓ Included', desc: 'Feasibility & operational assessment, adjusted concept floor plan, mood & feeling recommendations.' },
+    { stage: 'Final Concept', status: '✓ Included', desc: 'Concept statement, final layout, moodboard, 3D key views, material palette.' },
     { stage: 'Schematic Design', status: '✓ Included', desc: 'Annotated plans, RCP & floor-finish plans, key elevations, outline spec schedules.' },
     { stage: 'Design Development', status: '✓ Included', desc: 'Detailed drawings, material schedules, FF&E specifications.' },
-    { stage: 'Construction Documents + BOQ', status: '✓ Included', desc: 'Full CD set, tender-ready bill of quantities.' },
-    { stage: 'Tender Support · Site Supervision', status: '✓ Included', desc: 'Bid review, RFI responses, site visits through to completion.' },
-    { stage: 'Lighting Design', status: 'Optional', desc: 'Offered separately as an add-on at any stage — not bundled into the fee above.' },
+    { stage: 'Construction Documents', status: '✓ Included', desc: 'Full CD set, coordinated with consultants.' },
+    { stage: 'BOQ (Bill of Quantity)', status: '✓ Included', desc: 'Tender-ready bill of quantities.' },
+    { stage: 'Author Supervision', status: '✓ Included', desc: 'Bid review, RFI responses, site visits through to completion.' },
   ];
   const stagesC = [
-    { stage: 'Briefing & Mobilization', status: '✓ Included', desc: 'Kick-off, brief alignment, A&B material review, site assessment.' },
-    { stage: 'Concept Design + Lighting (Optional)', status: '✓ Included', desc: 'Zoning & space planning, design narrative, moodboards, 3D key views, material palette. Lighting concept offered as optional add-on.' },
+    { stage: 'Appraisal and Briefing', status: '✓ Included', desc: 'Kick-off, brief alignment, A&B material review, site assessment.' },
+    { stage: 'Feasibility & Preliminary Concept', status: '✓ Included', desc: 'Feasibility & operational assessment, adjusted concept floor plan, mood & feeling recommendations.' },
+    { stage: 'Final Concept + Lighting (Optional)', status: '✓ Included', desc: 'Concept statement, final layout, moodboard, 3D key views, material palette. Lighting concept offered as optional add-on.' },
     { stage: 'Schematic Design', status: '✓ Included', desc: 'Annotated plans, RCP & floor-finish plans, key elevations, outline spec schedules.' },
     { stage: 'Design Development', status: '✓ Included', desc: 'Detailed drawings, material schedules, FF&E specifications.' },
-    { stage: 'Construction Documents + BOQ', status: '✓ Included', desc: 'Full CD set, tender-ready bill of quantities.' },
-    { stage: 'Tender Support · Site Supervision', status: '✓ Included', desc: 'Bid review, RFI responses, site visits through to completion.' },
+    { stage: 'Construction Documents', status: '✓ Included', desc: 'Full CD set, coordinated with consultants.' },
+    { stage: 'BOQ (Bill of Quantity)', status: '✓ Included', desc: 'Tender-ready bill of quantities.' },
+    { stage: 'Author Supervision', status: '✓ Included', desc: 'Bid review, RFI responses, site visits through to completion.' },
   ];
   const stages = scope === 'B' ? stagesB : scope === 'C' ? stagesC : stagesA;
 
-  // Header — exact positions from Taseco slide 3
-  tblHeader(s, [
-    { text: 'STAGE IN SCOPE', x: ML + 0.06, w: 3.5 },
-    { text: 'WHAT IT DELIVERS', x: ML + 5.0, w: 7.2 },
-  ], 1.55, 0.35);
-
-  const rowH = stages.length > 6 ? 0.75 : 0.88;
-  stages.forEach((st, i) => {
-    const isOpt = st.status === 'Optional';
-    const y = 1.55 + 0.35 + i * rowH;
-    const bg = i % 2 === 0 ? C.rowalt : C.white;
-    tblRow(s, [
-      { text: st.stage, x: ML + 0.1, w: 4.0, bold: !isOpt, italic: isOpt, color: isOpt ? C.gray : C.black },
-      { text: isOpt ? 'Optional' : '✓ Included', x: ML + 4.2, w: 0.9, color: isOpt ? C.gray : C.terradk, bold: !isOpt, align: 'center', fontSize: 8 },
-      { text: st.desc, x: ML + 5.2, w: 6.9, color: isOpt ? C.gray : C.black },
-    ], y, rowH - 0.07, bg);
+  // Native table (avoids a rendering bug seen with many manually-drawn
+  // overlapping shapes when row count is high — see Hourly Rates slide fix)
+  const rowH = stages.length > 8 ? 0.44 : stages.length > 6 ? 0.52 : 0.72;
+  const descFont = stages.length > 8 ? 7.5 : stages.length > 6 ? 8 : SZ.body;
+  const scopeRows = [
+    [
+      { text: 'STAGE IN SCOPE', options: { fill: { color: C.black }, color: 'FFFFFF', fontFace: F.light, fontSize: 8 } },
+      { text: '', options: { fill: { color: C.black }, color: 'FFFFFF', fontFace: F.light, fontSize: 8 } },
+      { text: 'WHAT IT DELIVERS', options: { fill: { color: C.black }, color: 'FFFFFF', fontFace: F.light, fontSize: 8 } },
+    ],
+    ...stages.map((st, i) => {
+      const isOpt = st.status === 'Optional';
+      const bg = i % 2 === 0 ? C.rowalt : C.white;
+      const fg = isOpt ? C.gray : C.black;
+      return [
+        { text: st.stage, options: { fill: { color: bg }, color: fg, fontFace: F.light, bold: !isOpt, italic: isOpt, fontSize: descFont, valign: 'top' } },
+        { text: isOpt ? 'Optional' : '\u2713 Included', options: { fill: { color: bg }, color: isOpt ? C.gray : C.terradk, fontFace: F.light, bold: !isOpt, fontSize: 7.5, align: 'center', valign: 'top' } },
+        { text: st.desc, options: { fill: { color: bg }, color: fg, fontFace: F.light, fontSize: descFont, valign: 'top' } },
+      ];
+    }),
+  ];
+  s.addTable(scopeRows, {
+    x: ML, y: 1.55, w: CW,
+    colW: [3.5, 1.4, 7.1],
+    rowH: [0.35, ...stages.map(() => rowH)],
+    border: { type: 'solid', color: C.border, pt: 0.5 },
+    margin: [0.04, 0.08, 0.04, 0.08],
+    autoPage: false,
   });
+
+  if (scope === 'B') {
+    const noteY = 1.55 + 0.35 + stages.length * rowH + 0.12;
+    s.addText('Lighting Design — offered separately as an add-on at any stage, not bundled into the fee above.', {
+      x: ML, y: noteY, w: CW, h: 0.25,
+      fontSize: 8, fontFace: F.light, color: C.gray, italic: true, margin: 0,
+    });
+  }
 
   pageNum(s, 3);
   copyright(s);
@@ -586,12 +638,15 @@ function slide07(pres, d) {
   slideTitle(s, 'Project Team', 'A senior, multidisciplinary team — with in-house Lighting Design');
 
   const team = d.team || [
-    { role: 'CREATIVE DIRECTOR', name: 'Gia Huy (Michael)', title: 'M.Architect · 23+ yrs · sets vision & design direction', dark: true },
-    { role: 'LEAD DESIGNER — CONCEPT', name: 'Nguyễn Mạnh Hùng (Henry)', title: 'Leads spatial concept, narrative & guest journey' },
-    { role: 'LIGHTING DESIGNER (IN-HOUSE)', name: '[Lighting Lead]', title: 'Atmosphere, fixture & control strategy from Concept' },
+    { role: 'CHIEF CREATIVE OFFICER', name: 'Gia Huy (Michael)', title: 'M.Architect · 24+ yrs · sets vision & design direction', dark: true },
+    { role: 'CHIEF OPERATING OFFICER', name: 'Nguyễn Văn Toàn (Karo)', title: 'Architect · 20+ yrs · sets vision & design direction', dark: true },
+    { role: 'CONCEPT LEAD', name: 'Nguyễn Mạnh Hùng (Henry)', title: 'Spatial concept, narrative & guest journey' },
     { role: 'HEAD OF FF&E', name: 'Nguyễn Thị Thúy Vy (Vivian)', title: 'Furniture, fixtures & material curation' },
     { role: 'TECHNICAL LEAD', name: 'Nguyễn Vương Linh (Lucas)', title: 'Schematic documentation & consultant coordination' },
     { role: '3D VISUALISATION & PM', name: 'Đỗ Danh Sơn', title: 'Photorealistic renders · schedule, reviews & delivery' },
+    { role: 'LIGHTING DESIGNER', name: '[Lighting Lead]', title: 'Atmosphere, fixture & control strategy' },
+    { role: 'AUDIO VISUAL DESIGNER', name: '[AV Lead]', title: 'Soundscape, AV & display concept' },
+    { role: 'BRAND LEAD', name: '[Brand Lead]', title: 'Naming, identity & brand guidelines' },
   ];
 
   const cw = 3.84, ch = 1.62;
@@ -630,70 +685,77 @@ function slide07(pres, d) {
 // ─── SLIDE 08 — DESIGN PROCESS ───────────────────────────────────
 function slide08(pres, d) {
   const s = pres.addSlide();
-  slideTitle(s, 'Design Process & Workflow', 'Approval-gated at every stage · First Draft \u2192 Review \u2192 Final Approval');
+  slideTitle(s, 'Design Process & Workflow', 'Approval-gated at every stage \u00b7 First Draft \u2192 Review \u2192 Final Approval \u2014 auto-adjusts to K\u1ecbch b\u1ea3n A / B / C');
 
   const scope = d.scope || 'A';
   const defs = getStageDefs(scope);
   const SHORT_LABEL = {
-    'Briefing & Mobilization': 'Briefing &\nMobilization',
-    'Concept Design + Lighting (Optional)': 'Concept Design\n+ Lighting*',
-    'Concept Design': 'Concept\nDesign',
+    'Appraisal and Briefing': 'Appraisal &\nBriefing',
+    'Feasibility & Preliminary Concept': 'Feasibility &\nPrelim. Concept',
+    'Final Concept + Lighting (Optional)': 'Final Concept\n+ Lighting*',
+    'Final Concept': 'Final\nConcept',
     'Schematic Design': 'Schematic\nDesign',
     'Design Development': 'Design\nDevelopment',
-    'Construction Documents + BOQ': 'Construction Docs\n+ BOQ',
-    'Tender Support + Site Supervision': 'Tender Support +\nSupervision',
+    'Construction Documents': 'Construction\nDocuments',
+    'BOQ (Bill of Quantity)': 'BOQ',
+    'Author Supervision': 'Author\nSupervision',
   };
   const stages = defs.map(st => SHORT_LABEL[st.stage] || st.stage);
 
+  // Flow diagram — box count/labels always match the selected Scope A/B/C
   const count = stages.length;
-  const gap = count > 4 ? 0.14 : 0.28;
+  const gap = count > 5 ? 0.12 : 0.2;
   const bw = (CW - (count - 1) * gap) / count;
-  const boxFont = count > 4 ? 9 : 11;
+  const boxFont = count > 6 ? 7.5 : count > 4 ? 8.5 : 10;
   stages.forEach((st, i) => {
     const x = ML + i * (bw + gap);
     const dark = i === stages.length - 1;
     s.addShape('rect', {
-      x, y: 1.55, w: bw, h: 0.95,
+      x, y: 1.55, w: bw, h: 0.85,
       fill: { color: dark ? C.black : C.white },
       line: { color: dark ? C.black : C.graylt, width: 1 },
     });
     s.addText(st, {
-      x: x + 0.06, y: 1.62, w: bw - 0.12, h: 0.78,
+      x: x + 0.04, y: 1.6, w: bw - 0.08, h: 0.7,
       fontSize: boxFont, fontFace: F.serif, color: dark ? C.white : C.black,
-      align: 'center', valign: 'middle', margin: 0,
+      align: 'center', valign: 'middle', margin: 0, lineSpacingMultiple: 1.05,
     });
     if (i < stages.length - 1) {
       s.addText('\u2192', {
-        x: x + bw + 0.01, y: 1.85, w: gap - 0.02, h: 0.35,
-        fontSize: count > 4 ? 10 : 13, fontFace: F.light, color: C.gray, align: 'center', margin: 0,
+        x: x + bw + 0.01, y: 1.78, w: gap - 0.02, h: 0.3,
+        fontSize: count > 5 ? 9 : 12, fontFace: F.light, color: C.gray, align: 'center', margin: 0,
       });
     }
   });
 
-  const timelineText = defs.map(st => `${st.stage.split(' + ')[0].split(' (')[0]} ~${st.weeks}wk`).join(' \u00b7 ') + ' + client-approval gates.';
-  const infos = [
-    { h: 'Cadence', b: 'Each stage: a First Draft, one consolidated Review round, then Final Approval & a stage-completion sign-off.\n\nAdditional rounds by addendum (time + fee).' },
-    { h: 'Tools', b: 'Revit + Enscape; photorealistic 3D key views from Concept so decisions are made on what you will actually see.' },
-    { h: 'Indicative Timeline', b: timelineText },
-  ];
-  infos.forEach((inf, i) => {
-    const x = ML + i * (3.85 + 0.28);
-    s.addShape('rect', {
-      x, y: 2.65, w: 3.85, h: 2.5,
-      fill: { color: C.rowalt }, line: { color: C.border, width: 0.5 },
+  // OUR METHODOLOGY
+  secLabel(s, 'OUR METHODOLOGY', ML, 2.65, CW);
+  s.addText('We provide a step-by-step method for how we approach a project to achieve the best results at each stage. Every stage runs through a First Draft, one consolidated Review round, then Final Approval before moving forward \u2014 giving the Client full visibility and control at each gate.', {
+    x: ML, y: 2.95, w: CW, h: 0.65,
+    fontSize: SZ.body, fontFace: F.light, color: C.black, margin: 0, valign: 'top', lineSpacingMultiple: 1.4,
+  });
+
+  // OUR PROCESS — one card per stage, always matching the selected Scope
+  secLabel(s, 'OUR PROCESS', ML, 3.75, CW);
+  const cardY = 4.05;
+  const cGap = 0.14;
+  const cw = (CW - (count - 1) * cGap) / count;
+  const cardFont = count > 6 ? 6.5 : count > 4 ? 7 : 7.5;
+  defs.forEach((st, i) => {
+    const x = ML + i * (cw + cGap);
+    s.addShape('rect', { x, y: cardY, w: cw, h: 2.15, fill: { color: C.rowalt }, line: { color: C.border, width: 0.5 } });
+    s.addText(String(i + 1), { x: x + 0.08, y: cardY + 0.08, w: cw - 0.16, h: 0.24, fontSize: 8.5, fontFace: F.bold, color: C.terradk, margin: 0 });
+    s.addText(st.stage, {
+      x: x + 0.08, y: cardY + 0.32, w: cw - 0.16, h: 0.55,
+      fontSize: cardFont + 1, fontFace: F.bold, color: C.black, margin: 0, valign: 'top', lineSpacingMultiple: 1.15,
     });
-    s.addText(inf.h, {
-      x: x + 0.18, y: 2.78, w: 3.55, h: 0.35,
-      fontSize: 11, fontFace: F.serif, color: C.black, margin: 0,
-    });
-    s.addText(inf.b, {
-      x: x + 0.18, y: 3.16, w: 3.55, h: 1.85,
-      fontSize: SZ.body, fontFace: F.light, color: C.black,
-      margin: 0, valign: 'top', lineSpacingMultiple: 1.4,
+    s.addText(STAGE_DESC[st.stage] || '', {
+      x: x + 0.08, y: cardY + 0.9, w: cw - 0.16, h: 1.15,
+      fontSize: cardFont, fontFace: F.light, color: C.gray, margin: 0, valign: 'top', lineSpacingMultiple: 1.25,
     });
   });
 
-  s.addText(`Methodology: ${defs.map(st => st.stage.split(' + ')[0].split(' (')[0]).join(' \u2192 ')}${scope === 'A' ? ' \u2014 full service available as a follow-on addendum.' : '.'}${scope !== 'B' ? ' *Lighting concept offered as an optional add-on within Concept Design.' : ''}`, {
+  s.addText(`Methodology: ${defs.map(st => st.stage.split(' + ')[0].split(' (')[0]).join(' \u2192 ')}${scope === 'A' ? ' \u2014 full service available as a follow-on addendum.' : '.'}${scope !== 'B' ? ' *Lighting concept offered as an optional add-on.' : ''}`, {
     x: ML, y: H - 0.6, w: CW, h: 0.22,
     fontSize: 7.5, fontFace: F.light, color: C.gray, margin: 0,
   });
@@ -702,7 +764,6 @@ function slide08(pres, d) {
   copyright(s);
 }
 
-// ─── SLIDE 09 — WORK STAGE DELIVERABLE ───────────────────────────
 function slideWorkStageDeliverable(pres, d) {
   const s = pres.addSlide();
   slideTitle(s, 'Work Stage Deliverable', 'How each stage moves from draft to signed approval');
@@ -760,54 +821,60 @@ function slideOrgChart(pres, d) {
   slideTitle(s, 'Project Organisation Chart', 'A senior, multidisciplinary team structured around your project');
 
   const team = d.team || [
-    { role: 'CREATIVE DIRECTOR', name: 'Gia Huy (Michael)' },
-    { role: 'LEAD DESIGNER — CONCEPT', name: 'Ngu\u1ec5n M\u1ea1nh H\u00f9ng (Henry)' },
-    { role: 'LIGHTING DESIGNER (IN-HOUSE)', name: '[Lighting Lead]' },
-    { role: 'HEAD OF FF&E', name: 'Ngu\u1ec5n Th\u1ecb Th\u00fay Vy (Vivian)' },
-    { role: 'TECHNICAL LEAD', name: 'Ngu\u1ec5n V\u01b0\u01a1ng Linh (Lucas)' },
+    { role: 'CHIEF CREATIVE OFFICER', name: 'Gia Huy (Michael)' },
+    { role: 'CHIEF OPERATING OFFICER', name: 'Nguy\u1ec5n V\u0103n To\u00e0n (Karo)' },
+    { role: 'CONCEPT LEAD', name: 'Nguy\u1ec5n M\u1ea1nh H\u00f9ng (Henry)' },
+    { role: 'HEAD OF FF&E', name: 'Nguy\u1ec5n Th\u1ecb Th\u00fay Vy (Vivian)' },
+    { role: 'TECHNICAL LEAD', name: 'Nguy\u1ec5n V\u01b0\u01a1ng Linh (Lucas)' },
     { role: '3D VISUALISATION & PM', name: '\u0110\u1ed7 Danh S\u01a1n' },
+    { role: 'LIGHTING DESIGNER', name: '[Lighting Lead]' },
+    { role: 'AUDIO VISUAL DESIGNER', name: '[AV Lead]' },
+    { role: 'BRAND LEAD', name: '[Brand Lead]' },
   ];
-  const director = team[0];
-  const heads = team.slice(1);
+  const leaders = team.slice(0, 2);
+  const heads = team.slice(2);
 
-  // Tier 1 — Studio
   const topW = 3.2, topX = ML + (CW - topW) / 2;
-  s.addShape('rect', { x: topX, y: 1.5, w: topW, h: 0.55, fill: { color: C.black }, line: { color: C.black, width: 0 } });
-  s.addText('H2X STUDIO', { x: topX, y: 1.5, w: topW, h: 0.55, fontSize: 11, fontFace: F.serif, color: C.white, align: 'center', valign: 'middle', margin: 0, charSpacing: 1 });
+  s.addShape('rect', { x: topX, y: 1.5, w: topW, h: 0.5, fill: { color: C.black }, line: { color: C.black, width: 0 } });
+  s.addText('H2X STUDIO', { x: topX, y: 1.5, w: topW, h: 0.5, fontSize: 11, fontFace: F.serif, color: C.white, align: 'center', valign: 'middle', margin: 0, charSpacing: 1 });
 
-  // Tier 2 — Creative Director
-  const t2W = 3.6, t2X = ML + (CW - t2W) / 2;
-  s.addShape('line', { x: ML + CW / 2, y: 2.05, w: 0, h: 0.3, line: { color: C.graylt, width: 1 } });
-  s.addShape('rect', { x: t2X, y: 2.35, w: t2W, h: 0.6, fill: { color: C.terradk }, line: { color: C.terradk, width: 0 } });
-  s.addText(director.role, { x: t2X, y: 2.4, w: t2W, h: 0.24, fontSize: 7, fontFace: F.light, color: C.white, align: 'center', margin: 0, charSpacing: 1 });
-  s.addText(director.name, { x: t2X, y: 2.62, w: t2W, h: 0.3, fontSize: 10, fontFace: F.serif, color: C.white, align: 'center', margin: 0 });
-
-  // Tier 3 — Department heads
-  const n = heads.length;
-  const hw = 2.15, hgap = (CW - n * hw) / (n - 1);
-  const t3Y = 3.55;
-  s.addShape('line', { x: ML + CW / 2, y: 2.95, w: 0, h: 0.25, line: { color: C.graylt, width: 1 } });
-  heads.forEach((m, i) => {
-    const x = ML + i * (hw + hgap);
-    s.addShape('line', { x: x + hw / 2, y: 3.2, w: 0, h: t3Y - 3.2, line: { color: C.graylt, width: 1 } });
-    s.addShape('rect', { x, y: t3Y, w: hw, h: 0.85, fill: { color: C.rowalt }, line: { color: C.border, width: 0.5 } });
-    s.addText(m.role, { x: x + 0.1, y: t3Y + 0.08, w: hw - 0.2, h: 0.36, fontSize: 6.5, fontFace: F.light, color: C.terra, align: 'center', margin: 0, valign: 'top', lineSpacingMultiple: 1.2 });
-    s.addText(m.name, { x: x + 0.1, y: t3Y + 0.46, w: hw - 0.2, h: 0.35, fontSize: 8.5, fontFace: F.serif, color: C.black, align: 'center', margin: 0, valign: 'top' });
+  const lw = 3.6, lgap = 0.3;
+  const lTotalW = leaders.length * lw + (leaders.length - 1) * lgap;
+  const lStartX = ML + (CW - lTotalW) / 2;
+  const t2Y = 2.25;
+  s.addShape('line', { x: ML + CW / 2, y: 2.0, w: 0, h: 0.25, line: { color: C.graylt, width: 1 } });
+  leaders.forEach((m, i) => {
+    const x = lStartX + i * (lw + lgap);
+    s.addShape('rect', { x, y: t2Y, w: lw, h: 0.58, fill: { color: C.terradk }, line: { color: C.terradk, width: 0 } });
+    s.addText(m.role, { x, y: t2Y + 0.05, w: lw, h: 0.22, fontSize: 7, fontFace: F.light, color: C.white, align: 'center', margin: 0, charSpacing: 1 });
+    s.addText(m.name, { x, y: t2Y + 0.26, w: lw, h: 0.3, fontSize: 10, fontFace: F.serif, color: C.white, align: 'center', margin: 0 });
   });
 
-  // Tier 4 — support teams
-  const t4Y = 4.9;
-  const support = ['Architecture &\nConcept Team', 'Interior &\nFF&E Team', 'Lighting &\nTechnical Team', '3D Visualisation\nTeam'];
-  const sw = 2.15, sgap = (CW - support.length * sw) / (support.length - 1);
+  const n = heads.length;
+  const hgapFixed = 0.14;
+  const hw = (CW - (n - 1) * hgapFixed) / n;
+  const t3Y = 3.35;
+  s.addShape('line', { x: ML + CW / 2, y: t2Y + 0.58, w: 0, h: t3Y - (t2Y + 0.58), line: { color: C.graylt, width: 1 } });
+  heads.forEach((m, i) => {
+    const x = ML + i * (hw + hgapFixed);
+    s.addShape('line', { x: x + hw / 2, y: t3Y - 0.15, w: 0, h: 0.15, line: { color: C.graylt, width: 1 } });
+    s.addShape('rect', { x, y: t3Y, w: hw, h: 0.95, fill: { color: C.rowalt }, line: { color: C.border, width: 0.5 } });
+    s.addText(m.role, { x: x + 0.06, y: t3Y + 0.08, w: hw - 0.12, h: 0.42, fontSize: 6, fontFace: F.light, color: C.terra, align: 'center', margin: 0, valign: 'top', lineSpacingMultiple: 1.15 });
+    s.addText(m.name, { x: x + 0.06, y: t3Y + 0.52, w: hw - 0.12, h: 0.38, fontSize: 7.5, fontFace: F.serif, color: C.black, align: 'center', margin: 0, valign: 'top' });
+  });
+
+  const t4Y = 4.75;
+  const support = ['Architecture &\nConcept Team', 'Interior &\nFF&E Team', 'Lighting &\nTechnical Team', '3D Visualisation\nTeam', 'Brand & AV\nTeam'];
+  const sw = (CW - (support.length - 1) * 0.14) / support.length;
   s.addText('Supported by', { x: ML, y: t4Y - 0.32, w: 3, h: 0.25, fontSize: 8, fontFace: F.light, color: C.gray, italic: true, margin: 0 });
   support.forEach((sup, i) => {
-    const x = ML + i * (sw + sgap);
+    const x = ML + i * (sw + 0.14);
     s.addShape('rect', { x, y: t4Y, w: sw, h: 0.6, fill: { color: C.white }, line: { color: C.graylt, width: 0.75 } });
-    s.addText(sup, { x: x + 0.08, y: t4Y, w: sw - 0.16, h: 0.6, fontSize: 8, fontFace: F.light, color: C.black, align: 'center', valign: 'middle', margin: 0, lineSpacingMultiple: 1.2 });
+    s.addText(sup, { x: x + 0.06, y: t4Y, w: sw - 0.12, h: 0.6, fontSize: 7, fontFace: F.light, color: C.black, align: 'center', valign: 'middle', margin: 0, lineSpacingMultiple: 1.15 });
   });
 
-  s.addText('Every project is led directly by the Creative Director and a dedicated Lighting Designer works in-house from Concept, not bolted on later.', {
-    x: ML, y: 5.85, w: CW, h: 0.3, fontSize: 8, fontFace: F.light, color: C.gray, italic: true, margin: 0,
+  s.addText('Every project is led directly by the CCO/COO and a dedicated Lighting Designer works in-house from Concept, not bolted on later.', {
+    x: ML, y: 5.65, w: CW, h: 0.3, fontSize: 8, fontFace: F.light, color: C.gray, italic: true, margin: 0,
   });
 
   pageNum(s, 10);
@@ -817,21 +884,26 @@ function slideOrgChart(pres, d) {
 // ─── SLIDE 11 — DESIGN WORK PHASE ────────────────────────────────
 function slideDesignWorkPhase(pres, d) {
   const s = pres.addSlide();
-  slideTitle(s, 'Design Work Phase', 'What H2X delivers at each stage \u2014 deliverable-level detail');
-
   const scope = d.scope || 'A';
-  const phases = d.workPhases || [
-    { name: 'Briefing & Mobilization', lead: 'H2X + Client', deliverable: 'Kick-off meeting; scope alignment; site visit; review of existing materials (site plans, structural/M&E drawings).' },
-    { name: 'Concept Design' + (scope !== 'B' ? ' + Lighting (Optional)' : ''), lead: 'H2X (Concept + Lighting)', deliverable: 'Look & Feel / Moodboard & story, coloured plan, 3D colour renders, digital material board \u2014 all in PDF.' },
-    { name: 'Schematic Design', lead: 'H2X', deliverable: 'Annotated plans, RCP & floor-finish plan, key elevations, outline specification schedules (DWG/PDF).' },
-  ];
-  if (scope !== 'A') {
-    phases.push(
-      { name: 'Design Development', lead: 'H2X', deliverable: 'Full technical drawings: fit-out, built-in, MEP coordination, loose furniture list, specification schedules (DWG/PDF).' },
-      { name: 'Construction Documents + BOQ', lead: 'H2X', deliverable: 'Complete construction drawing set for site execution; tender-ready bill of quantities.' },
-      { name: 'Tender Support + Site Supervision', lead: 'H2X', deliverable: 'Bid review, RFI responses, and periodic site visits through to completion.' },
-    );
-  }
+  slideTitle(s, 'Design Work Phase', `What H2X delivers at each stage \u2014 K\u1ecbch b\u1ea3n ${scope} \u2014 deliverable-level detail`);
+
+  const WORK_PHASE_DELIVERABLE = {
+    'Appraisal and Briefing': 'Kick-off meeting; scope alignment; site visit; review of existing materials (site plans, structural/M&E drawings).',
+    'Feasibility & Preliminary Concept': 'Feasibility & operational assessment; preliminary zoning layout; material board; design narrative (DWG/PDF).',
+    'Final Concept + Lighting (Optional)': 'Look & Feel / Moodboard & story, coloured plan, 3D colour renders, digital material board \u2014 all in PDF.',
+    'Final Concept': 'Look & Feel / Moodboard & story, coloured plan, 3D colour renders, digital material board \u2014 all in PDF.',
+    'Schematic Design': 'Annotated plans, RCP & floor-finish plan, key elevations, outline specification schedules (DWG/PDF).',
+    'Design Development': 'Full technical drawings: fit-out, built-in, MEP coordination, loose furniture list, specification schedules (DWG/PDF).',
+    'Construction Documents': 'Complete construction drawing set for site execution, coordinated across all consultants (DWG/PDF).',
+    'BOQ (Bill of Quantity)': 'Tender-ready bill of quantities.',
+    'Author Supervision': 'Bid review, RFI responses, and periodic site visits through to completion.',
+  };
+  const defs = getStageDefs(scope);
+  const phases = defs.map(st => ({
+    name: st.stage,
+    lead: st.stage.includes('Lighting') ? 'H2X (Design + Lighting)' : 'H2X',
+    deliverable: WORK_PHASE_DELIVERABLE[st.stage] || '',
+  }));
 
   tblHeader(s, [
     { text: 'PHASE', x: ML + 0.06, w: 3.4 },
@@ -839,100 +911,198 @@ function slideDesignWorkPhase(pres, d) {
     { text: 'KEY DELIVERABLES', x: ML + 5.75, w: 6.25 },
   ], 1.55, 0.32);
 
-  const rowH = phases.length > 4 ? 0.78 : 1.05;
+  const rowH = phases.length > 6 ? 0.55 : phases.length > 4 ? 0.7 : 1.05;
   phases.forEach((p, i) => {
     const y = 1.55 + 0.32 + i * rowH;
     const bg = i % 2 === 0 ? C.rowalt : C.white;
     s.addShape('rect', { x: ML, y, w: CW, h: rowH - 0.06, fill: { color: bg }, line: { color: C.border, width: 0.5 } });
-    s.addText(p.name, { x: ML + 0.16, y: y + 0.08, w: 3.25, h: rowH - 0.2, fontSize: SZ.body, fontFace: F.bold, color: C.black, margin: 0, valign: 'top', lineSpacingMultiple: 1.3 });
-    s.addText(p.lead, { x: ML + 3.55, y: y + 0.08, w: 2.0, h: rowH - 0.2, fontSize: 7.5, fontFace: F.light, color: C.terradk, margin: 0, valign: 'top' });
-    s.addText(p.deliverable, { x: ML + 5.75, y: y + 0.08, w: 6.15, h: rowH - 0.2, fontSize: 8, fontFace: F.light, color: C.black, margin: 0, valign: 'top', lineSpacingMultiple: 1.3 });
+    s.addText(p.name, { x: ML + 0.16, y: y + 0.06, w: 3.25, h: rowH - 0.14, fontSize: SZ.body, fontFace: F.bold, color: C.black, margin: 0, valign: 'top', lineSpacingMultiple: 1.2 });
+    s.addText(p.lead, { x: ML + 3.55, y: y + 0.06, w: 2.0, h: rowH - 0.14, fontSize: 7.5, fontFace: F.light, color: C.terradk, margin: 0, valign: 'top' });
+    s.addText(p.deliverable, { x: ML + 5.75, y: y + 0.06, w: 6.15, h: rowH - 0.14, fontSize: 7.5, fontFace: F.light, color: C.black, margin: 0, valign: 'top', lineSpacingMultiple: 1.2 });
+  });
+
+  s.addText('Detailed purpose, scope-of-work and full deliverable breakdown for each phase follow on the next pages.', {
+    x: ML, y: 1.55 + 0.32 + phases.length * rowH + 0.15, w: CW, h: 0.25,
+    fontSize: 7.5, fontFace: F.light, color: C.gray, italic: true, margin: 0,
   });
 
   pageNum(s, 11);
   copyright(s);
 }
 
+// ─── PHASE EXPLAINER (generic renderer, used for the 6 detail slides below) ──
+function slidePhaseExplainer(pres, d, pageN, data) {
+  const s = pres.addSlide();
+  slideTitle(s, data.title, data.leadLine);
+
+  secLabel(s, 'PURPOSE OF THE STAGE', ML, 1.55, CW);
+  s.addText(data.purpose, {
+    x: ML, y: 1.83, w: CW, h: 0.55,
+    fontSize: SZ.body, fontFace: F.light, color: C.black, margin: 0, valign: 'top', lineSpacingMultiple: 1.35,
+  });
+
+  secLabel(s, 'COVERED WITHIN THE STAGE', ML, 2.5, 7.0);
+  let cy = 2.78;
+  data.covered.forEach(line => {
+    s.addText('+', { x: ML, y: cy, w: 0.2, h: 0.3, fontSize: SZ.body, fontFace: F.bold, color: C.terra, margin: 0 });
+    s.addText(line, {
+      x: ML + 0.22, y: cy, w: 6.78, h: 0.5,
+      fontSize: 8, fontFace: F.light, color: C.black, margin: 0, valign: 'top', lineSpacingMultiple: 1.25,
+    });
+    cy += 0.02 + Math.ceil(line.length / 78) * 0.22;
+  });
+
+  secLabel(s, 'DELIVERABLES', ML + 7.4, 2.5, 4.9);
+  let dy = 2.78;
+  data.deliverables.forEach(line => {
+    s.addText('+', { x: ML + 7.4, y: dy, w: 0.2, h: 0.3, fontSize: SZ.body, fontFace: F.bold, color: C.terra, margin: 0 });
+    s.addText(line, {
+      x: ML + 7.62, y: dy, w: 4.7, h: 0.5,
+      fontSize: 8, fontFace: F.light, color: C.black, margin: 0, valign: 'top', lineSpacingMultiple: 1.25,
+    });
+    dy += 0.02 + Math.ceil(line.length / 55) * 0.22;
+  });
+
+  pageNum(s, pageN);
+  copyright(s);
+}
+
+function slideBriefing(pres, d) {
+  slidePhaseExplainer(pres, d, 12, {
+    title: 'Briefing and Mobilisation',
+    leadLine: 'LEAD \u2014 H2X & Client \u00b7 SUPPORT \u2014 Consultants',
+    purpose: 'Ensure the project kicks off with the full design and consultant teams on board, and briefs agreed.',
+    covered: [
+      'H2X is introduced to the rest of the Design Team; overall scope and master-planning are reviewed to identify any scope gaps.',
+      'H2X completes Appraisal & Briefing with all relevant material to kick off the Concept phase: site plans, elevations, existing structural and M&E drawings (DWG files), site photos, renderings, landscaping.',
+      'Site visit (where possible) with the Client and Lead Consultant to review location, surroundings, site restrictions/limitations.',
+      'Review of the brief with the Client to check for updates since contract agreement, guidelines, program requirements and scope of works.',
+    ],
+    deliverables: ['Kick-off meeting'],
+  });
+}
+
+function slideFeasibility(pres, d) {
+  slidePhaseExplainer(pres, d, 13, {
+    title: 'Feasibility (Pre-Concept Design)',
+    leadLine: 'LEAD \u2014 H2X \u00b7 SUPPORT \u2014 Consultants',
+    purpose: 'Generate a design narrative.',
+    covered: [
+      'Research the unique attributes of the location and site, including a deeper understanding of the brief and brand aspirations.',
+      'Prepare a selection of images to determine the design concept direction by means of photographic references.',
+      'Prepare preliminary interior zoning layout showing the functional programme.',
+      'Prepare material board (photographic references) and design narrative.',
+      '1st presentation with Client for interior concept direction.',
+    ],
+    deliverables: ['Overview Concept Page (DWG/PDF)'],
+  });
+}
+
+function slideConceptDesignExplainer(pres, d) {
+  slidePhaseExplainer(pres, d, 14, {
+    title: 'Concept Design',
+    leadLine: 'LEAD \u2014 H2X \u00b7 SUPPORT \u2014 Consultants \u00b7 Runs concurrently with Feasibility',
+    purpose: 'Establish an agreed Concept intent and direction, reflecting the character of the project areas covered in the brief.',
+    covered: [
+      'Narrative pages: creating a unique point to base the design on.',
+      'Mood & Feel presentation: inspiration images and initial sketches explaining overall look and feel.',
+      'Furniture and Fixtures: initial selection of furniture, lighting, fixtures and fittings for feedback, incl. initial custom sketches.',
+      'Material boards: initial presentation of architectural and upholstery finishes in key areas.',
+    ],
+    deliverables: ['Look & Feel, Moodboard and story (PDF)', 'Coloured Plan', '3D Colour Renders', 'Digital material board (PDF)'],
+  });
+}
+
+function slideSchematicExplainer(pres, d) {
+  slidePhaseExplainer(pres, d, 15, {
+    title: 'Schematic Design',
+    leadLine: 'LEAD \u2014 H2X \u00b7 SUPPORT \u2014 Consultants \u00b7 Kicks off once Concept Design is approved',
+    purpose: 'Provide DWG drawings and basic schedules to the design team for development into the Detail Design package.',
+    covered: [
+      'Plans clearly annotated with key finishes, including RCP and floor-finishes plan.',
+      'Key elevations clearly annotated with key finishes, agreed at the end of Concept Design.',
+      'Outline specification schedules for architectural finishes, presented as index pages for further development.',
+    ],
+    deliverables: ['Plans package (DWG/PDF)', 'Elevations (DWG/PDF)', 'Table of Materials (Office files/PDF)', 'General layout, floor finish, electrical & RCP plans', 'Key sections showing furniture elevations'],
+  });
+}
+
+function slideDevelopmentExplainer(pres, d) {
+  slidePhaseExplainer(pres, d, 16, {
+    title: 'Development Design',
+    leadLine: 'LEAD \u2014 H2X \u00b7 SUPPORT \u2014 Consultants \u00b7 Develops from the approved Schematic Design',
+    purpose: 'Develop the entire technical drawing set to ensure the design follows the direction set in Schematic Design.',
+    covered: [
+      'Full development of technical drawings for the entire interior, including walls and separate items.',
+      'Complete technical solutions for the entire project, ensuring accurate estimation, bidding invitation and design feasibility.',
+      'Coordination of MEP design across the full technical document set.',
+    ],
+    deliverables: ['Technical docs: Fit-out, Built-in (DWG/PDF)', 'Technical docs: full MEP design (DWG/PDF)', 'Specifications (Digital list)', 'Loose Furniture list', 'RCP, wall/floor finish & electrical plans', 'Large-scale detail drawings'],
+  });
+}
+
+function slideConstructionDocsExplainer(pres, d) {
+  slidePhaseExplainer(pres, d, 17, {
+    title: 'Construction Documents',
+    leadLine: 'LEAD \u2014 H2X \u00b7 SUPPORT \u2014 Consultants \u00b7 Final phase, developed from approved Development Design',
+    purpose: 'Produce a complete set of detailed technical construction drawings for site execution \u2014 the official documentation for construction on site.',
+    covered: [
+      'Develop the full set of technical construction drawings based on the approved design: fit-out and built-in drawings.',
+      'Detailed drawings of walls, ceilings, flooring, loose furniture, and built components.',
+      'Precise technical drawings, specifications and schedules ensuring accuracy, feasibility and coordination across all construction activities.',
+    ],
+    deliverables: ['Construction Drawings Package (DWG/PDF)', 'Schedules & technical specs for hard finishes, sanitary fittings, equipment', 'FF&E selection'],
+  });
+}
+
+// ─── SLIDE 09 — DETAILED DESIGN STAGE
 // ─── SLIDE 09 — DETAILED DESIGN STAGE ────────────────────────────
 function slide09(pres, d) {
   const s = pres.addSlide();
-  slideTitle(s, 'Detailed Design Stage', 'Design stage breakdown · Concept through Construction Documents');
+  const scope = d.scope || 'A';
+  slideTitle(s, 'Detailed Design Stage', `Design stage breakdown · Kịch bản ${scope} · weeks & ratio synced with Document Issue Schedule`);
 
-  const groups = d.designStageGroups || [
-    { group: 'STAGE 1 — CONCEPT DESIGN & 3D RENDERING', ratio: '60%', items: [
-      { num: '1', name: 'Appraisal and Briefing', weeks: '1', ratio: '10%' },
-      { num: '2', name: 'Feasibility & Preliminary Concept Design', weeks: '2', ratio: '20%', children: [
-        'Feasibility and Operational Assessment',
-        'Adjusted Concept Design Floor Plan',
-        'Mood & Feeling Recommendations',
-      ]},
-      { num: '3', name: 'Final Concept Design', weeks: '4', ratio: '30%', children: [
-        'Concept Statement, Final Layout & Moodboard',
-      ]},
-    ]},
-    { group: 'STAGE 2 — DEVELOPMENT DESIGN', ratio: '40%', items: [
-      { num: '4', name: 'Schematic Design', weeks: '4', ratio: '15%' },
-      { num: '5', name: 'Design Development', weeks: '4', ratio: '10%' },
-      { num: '6', name: 'Construction Documents', weeks: '6', ratio: '10%' },
-      { num: '7', name: 'BOQ (Bill of Quantity)', weeks: '3', ratio: '5%' },
-    ]},
-  ];
+  const defs = d.docSchedule && d.docSchedule.length ? d.docSchedule : getStageDefs(scope);
+  const totalWeeks = defs.reduce((sum, st) => sum + (Number(st.weeks) || 0), 0);
 
   tblHeader(s, [
-    { text: 'STAGE', x: ML + 0.06, w: 0.6 },
+    { text: '#', x: ML + 0.06, w: 0.6, align: 'center' },
     { text: 'PHASE', x: ML + 0.75, w: 7.5 },
     { text: 'WEEKS', x: ML + 8.35, w: 1.2, align: 'center' },
     { text: 'RATIO', x: ML + 9.65, w: 2.35, align: 'center' },
-  ], 1.55, 0.32);
+  ], 1.55, 0.35);
 
-  let y = 1.55 + 0.32;
-  groups.forEach(g => {
-    // Group header band
-    s.addShape('rect', { x: ML, y, w: CW, h: 0.28, fill: { color: C.cream }, line: { color: C.border, width: 0.5 } });
-    s.addText(g.group, { x: ML + 0.1, y: y + 0.02, w: 8.5, h: 0.24, fontSize: 8.5, fontFace: F.bold, color: C.terradk, charSpacing: 1, margin: 0, valign: 'middle' });
-    s.addText(g.ratio, { x: ML + 9.65, y: y + 0.02, w: 2.35, h: 0.24, fontSize: 8.5, fontFace: F.bold, color: C.terradk, align: 'center', margin: 0, valign: 'middle' });
-    y += 0.28;
-    g.items.forEach((it, i) => {
-      const childLines = it.children ? it.children.length : 0;
-      const rowH = 0.32 + childLines * 0.19;
-      const bg = i % 2 === 0 ? C.white : C.rowalt;
-      const hasChildren = childLines > 0;
-      // Draw row background manually so we can control text valign precisely —
-      // tblRow() always vertically centers text, which overlaps sub-items when the
-      // row is tall enough to accommodate children.
-      s.addShape('rect', { x: ML, y, w: CW, h: rowH, fill: { color: bg }, line: { color: C.border, width: 0.5 } });
-      const cellOpts = hasChildren
-        ? { y: y + 0.05, h: 0.24, valign: 'top' }
-        : { y: y + 0.06, h: rowH - 0.1, valign: 'middle' };
-      s.addText(it.num, { x: ML + 0.1, w: 0.55, align: 'center', fontSize: SZ.body, fontFace: F.light, color: C.black, margin: 0, ...cellOpts });
-      s.addText(it.name, { x: ML + 0.75, w: 7.45, fontSize: SZ.body, fontFace: F.light, color: C.black, margin: 0, ...cellOpts });
-      s.addText(it.weeks, { x: ML + 8.35, w: 1.15, align: 'center', fontSize: SZ.body, fontFace: F.light, color: C.black, margin: 0, ...cellOpts });
-      s.addText(it.ratio, { x: ML + 9.65, w: 2.35, align: 'center', fontSize: SZ.body, fontFace: F.light, color: C.black, margin: 0, ...cellOpts });
-      if (it.children) {
-        it.children.forEach((c, ci) => {
-          s.addText(`${it.num}.${ci + 1}   ${c}`, {
-            x: ML + 0.95, y: y + 0.32 + ci * 0.19, w: 7.2, h: 0.19,
-            fontSize: 7.5, fontFace: F.light, color: C.gray, italic: true, margin: 0, valign: 'top',
-          });
-        });
-      }
-      y += rowH;
-    });
+  const rowH = defs.length > 5 ? 0.5 : 0.65;
+  defs.forEach((st, i) => {
+    const y = 1.55 + 0.35 + i * rowH;
+    tblRow(s, [
+      { text: String(i + 1), x: ML + 0.1, w: 0.55, align: 'center' },
+      { text: st.stage, x: ML + 0.75, w: 7.45 },
+      { text: String(st.weeks), x: ML + 8.35, w: 1.15, align: 'center' },
+      { text: st.ratio + '%', x: ML + 9.65, w: 2.35, align: 'center' },
+    ], y, rowH - 0.05, i % 2 === 0 ? C.white : C.rowalt);
   });
 
-  s.addText('Client Approval required at the end of each stage before proceeding. Construction Phase (Bid/Tender/Procurement, Construction Admin, Handover) priced separately by others.', {
-    x: ML, y: y + 0.12, w: CW, h: 0.35,
+  const totY = 1.55 + 0.35 + defs.length * rowH;
+  tblRow(s, [
+    { text: 'TOTAL', x: ML + 0.75, w: 7.7, bold: true, color: C.terradk },
+    { text: String(totalWeeks), x: ML + 8.35, w: 1.15, align: 'center', bold: true, color: C.terradk },
+    { text: '100%', x: ML + 9.65, w: 2.35, align: 'center', bold: true, color: C.terradk },
+  ], totY, 0.4, C.rowtot);
+
+  s.addText('Client Approval required at the end of each stage before proceeding.' + (scope === 'A' ? ' Design Development / Construction Documents / BOQ / Author Supervision available as a follow-on addendum.' : ' Bid/Tender/Procurement and Handover priced separately by others.'), {
+    x: ML, y: totY + 0.5, w: CW, h: 0.35,
     fontSize: 7.5, fontFace: F.light, color: C.gray, italic: true, margin: 0, lineSpacingMultiple: 1.3,
   });
 
-  pageNum(s, 14);
+  pageNum(s, 20);
   copyright(s);
 }
 
 // ─── SLIDE 10 — DETAILED SOW LIST ────────────────────────────────
 function slide10(pres, d) {
   const s = pres.addSlide();
-  slideTitle(s, 'Detailed SOW List', 'Scope of Works breakdown by deliverable, mapped to 3 service options');
+  slideTitle(s, 'Detailed SOW List', 'Scope of Works breakdown by deliverable, mapped to K\u1ecbch b\u1ea3n A / B / C');
 
   const scope = d.scope || 'A';
   const groups = d.sowGroups || [
@@ -942,42 +1112,41 @@ function slide10(pres, d) {
       { num: '1.2', name: 'Adjusted Concept Design Floor Plan', opt: [1, 1, 1] },
       { num: '1.3', name: 'Mood & Feeling Recommendations', opt: [1, 1, 1] },
     ]},
-    { num: '2', name: 'Concept Design', items: [
+    { num: '2', name: 'Final Concept', items: [
       { num: '2.1', name: 'Concept Statement, Final Layout & Moodboard', opt: [1, 1, 1] },
       { num: '2.2', name: 'Picture & Video Render', opt: [1, 1, 1] },
     ]},
     { num: '3', name: 'Schematic Design', items: [
       { num: '3.1', name: 'Schematic Drawings', opt: [1, 1, 1] },
-      { num: '3.2', name: 'Lighting Design Consulting', opt: [0, 1, 1], note: 'By lighting experts' },
-      { num: '3.3', name: 'Signage & AV Consulting', opt: [0, 0, 1], note: 'By specialist consultant' },
+      { num: '3.2', name: 'Lighting Design Consulting', opt: [1, 0, 1], note: 'Optional / offered as add-on in B' },
+      { num: '3.3', name: 'Signage & AV Consulting', opt: [0, 0, 0], note: 'By specialist consultant, add-on' },
     ]},
     { num: '4', name: 'Design Development', items: [
-      { num: '4.1', name: 'Interior Design Development', opt: [1, 1, 1] },
-      { num: '4.2', name: 'MEP Design Development', opt: [1, 1, 1] },
-      { num: '4.3', name: 'MEP Technical Design (Lighting/Signage/AV)', opt: [0, 0, 1], note: 'For bidding & tender' },
+      { num: '4.1', name: 'Interior Design Development', opt: [0, 1, 1] },
+      { num: '4.2', name: 'MEP Design Development', opt: [0, 1, 1] },
     ]},
     { num: '5', name: 'Construction Phase', items: [
-      { num: '5.1', name: 'Construction Documents', opt: [1, 1, 1], note: 'Per selected option' },
+      { num: '5.1', name: 'Construction Documents', opt: [0, 1, 1] },
       { num: '5.2', name: 'BOQ (Bill of Quantity)', opt: [0, 1, 1], note: 'For tender quantities' },
-      { num: '5.3', name: 'Bid / Tender / Procurement', opt: [0, 0, 0] },
+      { num: '5.3', name: 'Bid / Tender / Procurement', opt: [0, 0, 0], note: 'Client\u2019s responsibility' },
       { num: '5.4', name: 'VE and Budget Control', opt: [0, 0, 0] },
     ]},
-    { num: '6', name: 'Construction Admin / Author Supervision', items: [
-      { num: '6.1', name: 'Author Supervisor', opt: [1, 1, 1] },
-      { num: '6.2', name: 'Shop Drawings Checking', opt: [0, 0, 1] },
+    { num: '6', name: 'Author Supervision', items: [
+      { num: '6.1', name: 'Bid Review & RFI Response', opt: [0, 1, 1] },
+      { num: '6.2', name: 'Periodic Site Visits', opt: [0, 1, 1] },
     ]},
     { num: '7', name: 'Handover', opt: [0, 1, 1] },
   ];
-  const optLabels = ['OPTION 1', 'OPTION 2', 'OPTION 3'];
+  const optLabels = ['K\u1ecaCH B\u1ea2N A', 'K\u1ecaCH B\u1ea2N B', 'K\u1ecaCH B\u1ea2N C'];
   const activeCol = scope === 'A' ? 0 : scope === 'B' ? 1 : 2;
   const optW = 1.0, optX = [ML + 5.45, ML + 6.55, ML + 7.65];
 
   tblHeader(s, [
     { text: '#', x: ML + 0.06, w: 0.5, align: 'center' },
     { text: 'SCOPE OF WORKS', x: ML + 0.65, w: 4.7 },
-    { text: optLabels[0], x: optX[0], w: optW, align: 'center' },
-    { text: optLabels[1], x: optX[1], w: optW, align: 'center' },
-    { text: optLabels[2], x: optX[2], w: optW, align: 'center' },
+    { text: optLabels[0], x: optX[0], w: optW, align: 'center', fontSize: 6.5 },
+    { text: optLabels[1], x: optX[1], w: optW, align: 'center', fontSize: 6.5 },
+    { text: optLabels[2], x: optX[2], w: optW, align: 'center', fontSize: 6.5 },
     { text: 'NOTE', x: ML + 8.75, w: 3.25 },
   ], 1.55, 0.3);
 
@@ -1022,7 +1191,7 @@ function slide10(pres, d) {
     x: ML, y: noteY, w: CW, h: 0.2, fontSize: 7.5, fontFace: F.light, color: C.terradk, italic: true, margin: 0,
   });
 
-  pageNum(s, 15);
+  pageNum(s, 21);
   copyright(s);
 }
 
@@ -1079,7 +1248,7 @@ function slide11(pres, d) {
     x: ML, y: barY + barH + 0.1, w: CW, h: 0.22, fontSize: 7.5, fontFace: F.light, color: C.gray, italic: true, margin: 0,
   });
 
-  pageNum(s, 12);
+  pageNum(s, 18);
   copyright(s);
 }
 
@@ -1123,19 +1292,24 @@ function slide12(pres, d) {
     { text: fmt(fee), x: ML + 9.65, w: 2.35, align: 'center', bold: true, color: C.terradk },
   ], totY, 0.45, C.rowtot);
 
-  // Benchmark note
+  // Benchmark + notes (consolidated into one tight block to fit varying row counts)
   const area = parseFloat(d.area) || 0;
   const perSqm = area > 0 ? Math.round(fee / area) : 0;
-  s.addText(`≈ ${perSqm > 0 ? perSqm + ' USD / m²' : '[USD/m²]'} · ${d.area || '[X]'} m² · indicative benchmark for this typology. Excludes taxes & other fees.`, {
-    x: ML, y: totY + 0.55, w: CW, h: 0.28,
-    fontSize: 7.5, fontFace: F.light, color: C.gray, italic: true, margin: 0,
-  });
-  s.addText(scope === 'A' ? 'Design Development / Construction Documents / BOQ available as a follow-on addendum.' : 'Lighting Design available as an optional add-on — see Add-on Workstreams.', {
-    x: ML, y: totY + 0.82, w: CW, h: 0.25,
-    fontSize: 7.5, fontFace: F.light, color: C.gray, margin: 0,
+  const scopeNote = scope === 'A'
+    ? 'Design Development / Construction Documents / BOQ / Author Supervision available as a follow-on addendum.'
+    : 'Lighting Design available as an optional add-on — see Add-on Workstreams.';
+  const noteLines = [
+    `≈ ${perSqm > 0 ? perSqm + ' USD / m²' : '[USD/m²]'} · ${d.area || '[X]'} m² · indicative benchmark for this typology.`,
+    scopeNote,
+    'Fees above exclude taxes and other charges.',
+    'Using additional services within our ecosystem entitles you to a discount on the design fee.',
+  ].join('\n');
+  s.addText(noteLines, {
+    x: ML, y: totY + 0.5, w: CW, h: 0.62,
+    fontSize: 7.5, fontFace: F.light, color: C.gray, italic: true, margin: 0, lineSpacingMultiple: 1.25,
   });
 
-  pageNum(s, 13);
+  pageNum(s, 19);
   copyright(s);
 }
 
@@ -1172,7 +1346,7 @@ function slide13(pres, d) {
     s.addText(a.why.map(l => `+ ${l}`).join('\n'), { x: x + 0.18, y: 4.05, w: cw - 0.3, h: 1.8, fontSize: SZ.body, fontFace: F.light, color: C.black, margin: 0 });
   });
 
-  pageNum(s, 16);
+  pageNum(s, 22);
   copyright(s);
 }
 
@@ -1235,7 +1409,7 @@ function slide14(pres, d) {
     x: ML + 0.15, y: gtY + 0.82, w: CW - 0.3, h: 0.25, fontSize: SZ.body, fontFace: F.light, color: C.terradk, italic: true, margin: 0,
   });
 
-  pageNum(s, 17);
+  pageNum(s, 23);
   copyright(s);
 }
 
@@ -1248,52 +1422,73 @@ function slide15(pres, d) {
   const fee = parseFloat(d.feeTotal) || 0;
   const fmt = n => n > 0 ? n.toLocaleString('en-US') : '[—]';
 
-  const pmtA = [
-    { num: '1', m: 'Upon signing — mobilization', pct: '20%', amt: Math.round(fee * 0.20) },
-    { num: '2', m: 'Concept Design approval', pct: '45%', amt: Math.round(fee * 0.45) },
-    { num: '3', m: 'Schematic Design approval', pct: '35%', amt: Math.round(fee * 0.35) },
-  ];
-  const pmtB = [
-    { num: '1', m: 'Upon signing — mobilization', pct: '10%', amt: Math.round(fee * 0.10) },
-    { num: '2', m: 'Concept Design approval', pct: '20%', amt: Math.round(fee * 0.20) },
-    { num: '3', m: 'Schematic Design approval', pct: '20%', amt: Math.round(fee * 0.20) },
-    { num: '4', m: 'Design Development approval', pct: '20%', amt: Math.round(fee * 0.20) },
-    { num: '5', m: 'Construction Documents delivery', pct: '20%', amt: Math.round(fee * 0.20) },
-    { num: '6', m: 'Project completion / Final supervision', pct: '10%', amt: Math.round(fee * 0.10) },
-  ];
-  const pmts = scope === 'A' ? pmtA : pmtB;
+  const defs = getStageDefs(scope);
+  const pmts = defs.map((st, i) => ({
+    num: String(i + 1),
+    m: `${st.stage} approval`,
+    pct: st.ratio + '%',
+    amt: Math.round(fee * st.ratio / 100),
+    note: i === 0 ? 'Upon signing' : (i === defs.length - 1 ? 'Final milestone' : ''),
+  }));
 
   tblHeader(s, [
-    { text: '#', x: ML + 0.06, w: 0.6, align: 'center' },
-    { text: 'MILESTONE', x: ML + 0.75, w: 8.2 },
-    { text: '%', x: ML + 9.05, w: 1.0, align: 'center' },
-    { text: 'INTERIOR + LIGHTING (USD)', x: ML + 10.15, w: 1.95, align: 'center' },
+    { text: '#', x: ML + 0.06, w: 0.5, align: 'center' },
+    { text: 'MILESTONE', x: ML + 0.65, w: 6.55 },
+    { text: '%', x: ML + 7.3, w: 0.75, align: 'center' },
+    { text: 'FEE DESIGN (USD)', x: ML + 8.15, w: 1.85, align: 'center' },
+    { text: 'NOTE', x: ML + 10.1, w: 1.9 },
   ], 1.55, 0.35);
 
-  const rowH = pmts.length > 4 ? 0.52 : 0.72;
+  const rowH = pmts.length > 6 ? 0.44 : pmts.length > 4 ? 0.52 : 0.72;
   pmts.forEach((p, i) => {
     const y = 1.55 + 0.35 + i * rowH;
     tblRow(s, [
-      { text: p.num, x: ML + 0.1, w: 0.55, align: 'center' },
-      { text: p.m, x: ML + 0.75, w: 8.15 },
-      { text: p.pct, x: ML + 9.05, w: 0.95, align: 'center' },
-      { text: fmt(p.amt), x: ML + 10.15, w: 1.9, align: 'center' },
+      { text: p.num, x: ML + 0.1, w: 0.45, align: 'center' },
+      { text: p.m, x: ML + 0.65, w: 6.5 },
+      { text: p.pct, x: ML + 7.3, w: 0.7, align: 'center' },
+      { text: fmt(p.amt), x: ML + 8.15, w: 1.8, align: 'center' },
+      { text: p.note, x: ML + 10.1, w: 1.85, fontSize: 7.5, color: C.gray, italic: true },
     ], y, rowH - 0.05, i % 2 === 0 ? C.rowalt : C.white);
   });
 
   const totY = 1.55 + 0.35 + pmts.length * rowH;
   tblRow(s, [
-    { text: 'Total', x: ML + 0.75, w: 8.15, bold: true, color: C.terradk },
-    { text: '100%', x: ML + 9.05, w: 0.95, align: 'center', bold: true, color: C.terradk },
-    { text: fmt(fee), x: ML + 10.15, w: 1.9, align: 'center', bold: true, color: C.terradk },
-  ], totY, 0.45, C.rowtot);
+    { text: 'Subtotal — Design Fee', x: ML + 0.65, w: 6.5, bold: true, color: C.terradk },
+    { text: '100%', x: ML + 7.3, w: 0.7, align: 'center', bold: true, color: C.terradk },
+    { text: fmt(fee), x: ML + 8.15, w: 1.8, align: 'center', bold: true, color: C.terradk },
+    { text: '', x: ML + 10.1, w: 1.85 },
+  ], totY, 0.38, C.rowtot);
 
-  s.addText('Add-on workstreams (Brand, Signage, AV) billed 50% on kick-off and 50% on delivery, or may be folded into the schedule above. Invoices in USD; payment within 14 days of invoice.', {
-    x: ML, y: totY + 0.5, w: CW, h: 0.38,
-    fontSize: 8, fontFace: F.light, color: C.gray, margin: 0,
+  // Add-ons (if any selected) — compact single line + grand total, auto-summed
+  const addonRows = [
+    d.addBrand ? { label: 'Brand Identity & Naming', amt: parseFloat(d.feeBrand) || 0 } : null,
+    d.addSignage ? { label: 'Signage & Wayfinding', amt: parseFloat(d.feeSignage) || 0 } : null,
+    d.addAV ? { label: 'Audio-Visual Design', amt: parseFloat(d.feeAV) || 0 } : null,
+  ].filter(Boolean);
+  const addonsTotal = addonRows.reduce((sum, r) => sum + r.amt, 0);
+
+  let y2 = totY + 0.38;
+  if (addonRows.length) {
+    tblRow(s, [
+      { text: `Add-ons — ${addonRows.map(r => r.label).join(' · ')}`, x: ML + 0.65, w: 7.3, italic: true, color: C.gray, fontSize: 8 },
+      { text: fmt(addonsTotal), x: ML + 8.15, w: 1.8, align: 'center', italic: true, color: C.gray },
+      { text: 'Billed on delivery', x: ML + 10.1, w: 1.85, fontSize: 7.5, color: C.gray, italic: true },
+    ], y2, 0.32, C.white);
+    y2 += 0.32;
+    tblRow(s, [
+      { text: 'GRAND TOTAL (Design Fee + Add-ons)', x: ML + 0.65, w: 7.3, bold: true, color: C.white },
+      { text: fmt(fee + addonsTotal), x: ML + 8.15, w: 1.8, align: 'center', bold: true, color: C.white },
+      { text: '', x: ML + 10.1, w: 1.85 },
+    ], y2, 0.38, C.black);
+    y2 += 0.38;
+  }
+
+  s.addText('Add-on workstreams billed 50% on kick-off and 50% on delivery unless folded into the schedule above. Invoices in USD; payment within 14 days of invoice.', {
+    x: ML, y: y2 + 0.08, w: CW, h: 0.3,
+    fontSize: 7, fontFace: F.light, color: C.gray, italic: true, margin: 0, lineSpacingMultiple: 1.15,
   });
 
-  pageNum(s, 18);
+  pageNum(s, 24);
   copyright(s);
 }
 
@@ -1302,23 +1497,47 @@ function slide16(pres, d) {
   const s = pres.addSlide();
   slideTitle(s, 'Inclusions & Exclusions', null);
 
-  const inc = [
-    'Interior design — Concept & Schematic stages',
-    'Lighting Design — concept & schematic (integrated, in the design fee)',
-    'Zoning & space planning, design narrative, moodboards',
+  const scope = d.scope || 'A';
+  const incA = [
+    'Interior design — Appraisal through Schematic Design',
+    'Lighting Design — concept for Final Concept stage (optional, integrated in the design fee)',
+    'Feasibility assessment, zoning & space planning, design narrative, moodboards',
     '3D key-view renders · material & FF&E palette',
     'Schematic plans, RCP, elevations & outline specifications',
     'Brand, Signage & AV — concept stage (1 direction each) if selected',
   ];
-  const exc = [
-    'Design Development, Construction Documents & BOQ (follow-on addendum)',
+  const incBC = [
+    'Interior design — Appraisal through Author Supervision (full service)',
+    scope === 'C' ? 'Lighting Design — concept for Final Concept stage (optional, integrated in the design fee)' : 'Lighting Design — offered separately as an add-on (not bundled in this fee)',
+    'Feasibility assessment, zoning & space planning, design narrative, moodboards',
+    '3D key-view renders · material & FF&E palette',
+    'Full technical drawing set: Schematic, Design Development, Construction Documents',
+    'BOQ (Bill of Quantity) — tender-ready',
+    'Author Supervision — bid review, RFI responses, periodic site visits',
+    'Brand, Signage & AV — concept stage (1 direction each) if selected',
+  ];
+  const inc = scope === 'A' ? incA : incBC;
+
+  const excA = [
+    'Design Development, Construction Documents, BOQ & Author Supervision (follow-on addendum)',
     'Development & production of branding, signage & AV beyond concept',
     'Base-building architecture; MEP, structural & façade engineering',
     'Kitchen consultant, acoustics & fire engineering',
     'Permits & approvals · taxes/VAT',
     'Reimbursables: travel, printing, mock-ups (at cost with prior approval)',
-    'Construction & supervision (unless contracted under Full Services)',
+    'Construction & site works',
   ];
+  const excBC = [
+    scope === 'B' ? 'Lighting Design (offered separately as an add-on)' : null,
+    'Development & production of branding, signage & AV beyond concept',
+    'Base-building architecture; MEP, structural & façade engineering',
+    'Kitchen consultant, acoustics & fire engineering',
+    'Permits & approvals · taxes/VAT',
+    'Reimbursables: travel, printing, mock-ups (at cost with prior approval)',
+    'Construction & site works (physical build)',
+    'Tender / bid management beyond bid review (procurement is Client\u2019s responsibility)',
+  ].filter(Boolean);
+  const exc = scope === 'A' ? excA : excBC;
 
   [
     { label: 'INCLUSIONS', items: inc, x: ML, bg: C.rowalt, color: C.black },
@@ -1333,7 +1552,7 @@ function slide16(pres, d) {
     });
   });
 
-  pageNum(s, 19);
+  pageNum(s, 25);
   copyright(s);
 }
 
@@ -1361,7 +1580,7 @@ function slide17(pres, d) {
     s.addText(t.b, { x: x + 0.18, y: y + 0.38, w: 5.6, h: 0.55, fontSize: SZ.body, fontFace: F.light, color: C.black, margin: 0, valign: 'top', lineSpacingMultiple: 1.5 });
   });
 
-  pageNum(s, 20);
+  pageNum(s, 26);
   copyright(s);
 }
 
@@ -1412,6 +1631,162 @@ function slide18(pres, d) {
 }
 
 // ─── MAIN EXPORT ─────────────────────────────────────────────────
+// ─── SLIDE — HOURLY RATES & LITHOGRAPHY CHARGES ──────────────────
+function slideHourlyRates(pres, d) {
+  const s = pres.addSlide();
+  slideTitle(s, 'Hourly Rates & Lithography Charges', 'Appendix C & D \u2014 additional services time charges & printing rates (USD)');
+
+  const rates = d.hourlyRates || [
+    { role: 'Principal / Creative Director', hr: '$29', day: '$230' },
+    { role: 'Chief Operating Officer', hr: '$23', day: '$185' },
+    { role: 'Senior Technical Expert', hr: '$25', day: '$200' },
+    { role: 'Associate Director / Team Lead', hr: '$13', day: '$104' },
+    { role: 'Deputy Team Lead', hr: '$11', day: '$88' },
+    { role: 'Senior Designer', hr: '$10', day: '$81' },
+    { role: 'Senior 3D Visualiser', hr: '$8', day: '$65' },
+    { role: 'Designer / Technical Designer', hr: '$6', day: '$50' },
+    { role: 'FF&E Specialist', hr: '$5', day: '$38' },
+    { role: 'Accounting / Admin', hr: '$3.50', day: '$27' },
+  ];
+
+  // Left — Hourly / Daily Rates (native table — avoids a rendering bug seen with
+  // many manually-drawn overlapping shapes on this text-dense slide)
+  secLabel(s, 'APPENDIX C \u2014 HOURLY / DAILY RATES', ML, 1.5, 6.9);
+  const rateRows = [
+    [
+      { text: 'ROLE', options: { fill: { color: C.black }, color: 'FFFFFF', fontFace: F.light, fontSize: 8, bold: false } },
+      { text: 'PER HOUR', options: { fill: { color: C.black }, color: 'FFFFFF', fontFace: F.light, fontSize: 8, align: 'center' } },
+      { text: 'PER DAY', options: { fill: { color: C.black }, color: 'FFFFFF', fontFace: F.light, fontSize: 8, align: 'center' } },
+    ],
+    ...rates.map((r, i) => {
+      const bg = i % 2 === 0 ? C.rowalt : C.white;
+      return [
+        { text: r.role, options: { fill: { color: bg }, color: C.black, fontFace: F.light, fontSize: 7.5 } },
+        { text: r.hr, options: { fill: { color: bg }, color: C.black, fontFace: F.light, fontSize: 7.5, align: 'center' } },
+        { text: r.day, options: { fill: { color: bg }, color: C.black, fontFace: F.light, fontSize: 7.5, align: 'center' } },
+      ];
+    }),
+  ];
+  s.addTable(rateRows, {
+    x: ML, y: 1.8, w: 6.9,
+    colW: [4.6, 1.15, 1.15],
+    rowH: [0.32, ...rates.map(() => 0.32)],
+    border: { type: 'solid', color: C.border, pt: 0.5 },
+    margin: [0.03, 0.06, 0.03, 0.06],
+    valign: 'middle',
+    autoPage: false,
+  });
+
+  // Right — Lithography Charges
+  const rx = ML + 7.3, rw = CW - 7.3;
+  secLabel(s, 'APPENDIX D \u2014 LITHOGRAPHY & PRINTING (USD)', rx, 1.5, rw);
+  const litho = [
+    { size: 'A4', bw: '$0.05', col: '$0.20', mnt: '$2.50' },
+    { size: 'A3', bw: '$0.10', col: '$0.40', mnt: '$4.00' },
+    { size: 'A2', bw: '$0.15', col: '$1.20', mnt: '$7.00' },
+    { size: 'A1', bw: '$0.20', col: '$2.50', mnt: '$12' },
+    { size: 'A0', bw: '$0.35', col: '$4.50', mnt: '$18' },
+  ];
+  const lithoRows = [
+    [
+      { text: 'SIZE', options: { fill: { color: C.black }, color: 'FFFFFF', fontFace: F.light, fontSize: 8, align: 'center' } },
+      { text: 'B&W', options: { fill: { color: C.black }, color: 'FFFFFF', fontFace: F.light, fontSize: 8, align: 'center' } },
+      { text: 'COLOUR', options: { fill: { color: C.black }, color: 'FFFFFF', fontFace: F.light, fontSize: 8, align: 'center' } },
+      { text: 'MOUNT', options: { fill: { color: C.black }, color: 'FFFFFF', fontFace: F.light, fontSize: 8, align: 'center' } },
+    ],
+    ...litho.map((r, i) => {
+      const bg = i % 2 === 0 ? C.rowalt : C.white;
+      return [
+        { text: r.size, options: { fill: { color: bg }, color: C.black, fontFace: F.light, fontSize: 7.5, align: 'center' } },
+        { text: r.bw, options: { fill: { color: bg }, color: C.black, fontFace: F.light, fontSize: 7.5, align: 'center' } },
+        { text: r.col, options: { fill: { color: bg }, color: C.black, fontFace: F.light, fontSize: 7.5, align: 'center' } },
+        { text: r.mnt, options: { fill: { color: bg }, color: C.black, fontFace: F.light, fontSize: 7.5, align: 'center' } },
+      ];
+    }),
+  ];
+  s.addTable(lithoRows, {
+    x: rx, y: 1.8, w: rw,
+    colW: [0.95, 1.25, 1.25, 1.25],
+    rowH: [0.32, ...litho.map(() => 0.32)],
+    border: { type: 'solid', color: C.border, pt: 0.5 },
+    margin: [0.03, 0.03, 0.03, 0.03],
+    valign: 'middle',
+    autoPage: false,
+  });
+
+  const litY = 1.8 + 0.32 + litho.length * 0.34 + 0.15;
+  s.addText('Other: Soft copy transfer $12\u2013$19/time \u00b7 Binding $2\u2013$4/set \u00b7 Print resize $1/copy', {
+    x: rx, y: litY, w: rw, h: 0.4,
+    fontSize: 7.5, fontFace: F.light, color: C.gray, italic: true, margin: 0, lineSpacingMultiple: 1.25,
+  });
+
+  const noteY = 1.8 + 0.32 + rates.length * 0.36 + 0.15;
+  s.addText('Rates exclude VAT and other applicable taxes \u00b7 Reference conversion 1 USD \u2248 26,000 VND \u00b7 Rates apply for the current year and may be revised periodically.', {
+    x: ML, y: Math.max(noteY, litY + 0.5), w: CW, h: 0.4,
+    fontSize: 7.5, fontFace: F.light, color: C.gray, italic: true, margin: 0, lineSpacingMultiple: 1.25,
+  });
+
+  pageNum(s, 27);
+  copyright(s);
+}
+
+// ─── SLIDE — BIM FEE SCHEDULE ─────────────────────────────────────
+function slideBIMFee(pres, d) {
+  const s = pres.addSlide();
+  slideTitle(s, 'BIM Fee Schedule', 'Optional premium for delivering the project using Building Information Modelling');
+
+  const bimRoles = d.bimRates || [
+    { role: 'Partner / Design Director', hr: '$360', day: '$3,240', wk: '$16,200', mo: '$64,800' },
+    { role: 'Associate Designer', hr: '$190', day: '$1,710', wk: '$8,550', mo: '$34,200' },
+    { role: 'Senior Interior Designer / Senior FF&E', hr: '$130', day: '$1,170', wk: '$5,850', mo: '$23,400' },
+    { role: 'Interior Designer / FF&E', hr: '$100', day: '$900', wk: '$4,500', mo: '$18,000' },
+    { role: 'Senior CAD/BIM Technician', hr: '$70', day: '$630', wk: '$3,150', mo: '$12,600' },
+  ];
+
+  secLabel(s, 'BIM RATES \u2014 MONTHLY & HOURLY (USD)', ML, 1.5, CW);
+  tblHeader(s, [
+    { text: 'DESIGNATION', x: ML + 0.06, w: 4.0 },
+    { text: 'HOURLY', x: ML + 4.1, w: 1.9, align: 'center' },
+    { text: 'DAILY', x: ML + 6.05, w: 1.9, align: 'center' },
+    { text: 'WEEKLY', x: ML + 8.0, w: 1.9, align: 'center' },
+    { text: 'MONTHLY', x: ML + 9.95, w: 2.0, align: 'center' },
+  ], 1.8, 0.32);
+  bimRoles.forEach((r, i) => {
+    const y = 1.8 + 0.32 + i * 0.4;
+    tblRow(s, [
+      { text: r.role, x: ML + 0.1, w: 3.95, fontSize: 8 },
+      { text: r.hr, x: ML + 4.1, w: 1.85, align: 'center', fontSize: 8 },
+      { text: r.day, x: ML + 6.05, w: 1.85, align: 'center', fontSize: 8 },
+      { text: r.wk, x: ML + 8.0, w: 1.85, align: 'center', fontSize: 8 },
+      { text: r.mo, x: ML + 9.95, w: 1.95, align: 'center', fontSize: 8 },
+    ], y, 0.35, i % 2 === 0 ? C.rowalt : C.white);
+  });
+
+  const lodY = 1.8 + 0.32 + bimRoles.length * 0.4 + 0.25;
+  secLabel(s, 'LOD STANDARDS AT H2X', ML, lodY, CW);
+  const lods = [
+    { l: 'LOD 100 (Concept Design)', d: 'Massing, general orientation and basic space allocations for broad visualisation.' },
+    { l: 'LOD 200 (Schematic Design)', d: 'Preliminary dimensions, specific locations and relationships between model elements.' },
+    { l: 'LOD 300/350 (Detailed Design)', d: 'Detailed geometry, accurate dimensions and clash detection across all consultants.' },
+  ];
+  const lw = (CW - 2 * 0.2) / 3;
+  lods.forEach((item, i) => {
+    const x = ML + i * (lw + 0.2);
+    const y = lodY + 0.3;
+    s.addShape('rect', { x, y, w: lw, h: 1.15, fill: { color: C.rowalt }, line: { color: C.border, width: 0.5 } });
+    s.addText(item.l, { x: x + 0.12, y: y + 0.1, w: lw - 0.24, h: 0.4, fontSize: 8.5, fontFace: F.bold, color: C.terradk, margin: 0, valign: 'top', lineSpacingMultiple: 1.2 });
+    s.addText(item.d, { x: x + 0.12, y: y + 0.5, w: lw - 0.24, h: 0.6, fontSize: 7.5, fontFace: F.light, color: C.black, margin: 0, valign: 'top', lineSpacingMultiple: 1.25 });
+  });
+
+  s.addText('BIM authored in Autodesk Revit \u00b7 coordination via Navisworks \u00b7 aligned to ISO 19650-1/2 \u00b7 BIM delivery is an optional premium, quoted separately from the base Design Fee.', {
+    x: ML, y: lodY + 1.6, w: CW, h: 0.35,
+    fontSize: 7.5, fontFace: F.light, color: C.gray, italic: true, margin: 0, lineSpacingMultiple: 1.25,
+  });
+
+  pageNum(s, 28);
+  copyright(s);
+}
+
 async function generateProposal(data) {
   const pres = makePres();
   pres.title = `H2X Studio — ${data.projectName || 'Fee Proposal'}`;
@@ -1428,17 +1803,26 @@ async function generateProposal(data) {
   slideWorkStageDeliverable(pres, data);  // Work Stage Deliverable (page 9)
   slideOrgChart(pres, data);              // Project Organisation Chart (page 10)
   slideDesignWorkPhase(pres, data);       // Design Work Phase (page 11)
-  slide11(pres, data);  // Document Issue Schedule (page 12)
-  slide12(pres, data);  // Design Fee (page 13)
-  slide09(pres, data);  // Detailed Design Stage (page 14)
-  slide10(pres, data);  // Detailed SOW List (page 15)
+  slideBriefing(pres, data);              // Briefing and Mobilisation (page 12)
+  slideFeasibility(pres, data);           // Feasibility / Pre-Concept Design (page 13)
+  slideConceptDesignExplainer(pres, data);// Concept Design (page 14)
+  slideSchematicExplainer(pres, data);    // Schematic Design (page 15)
+  slideDevelopmentExplainer(pres, data);  // Development Design (page 16)
+  slideConstructionDocsExplainer(pres, data); // Construction Documents (page 17)
 
-  slide13(pres, data);  // Branding · Signage · AV — Scope & Value
-  slide14(pres, data);  // Add-on Workstreams (fee table)
+  slide11(pres, data);  // Document Issue Schedule (page 18)
+  slide12(pres, data);  // Design Fee (page 19)
+  slide09(pres, data);  // Detailed Design Stage (page 20)
+  slide10(pres, data);  // Detailed SOW List (page 21)
 
-  slide15(pres, data);  // Payment Schedule
-  slide16(pres, data);  // Inclusions & Exclusions
-  slide17(pres, data);  // Terms & Conditions
+  slide13(pres, data);  // Branding · Signage · AV — Scope & Value (page 22)
+  slide14(pres, data);  // Add-on Workstreams — fee table (page 23)
+
+  slide15(pres, data);  // Payment Schedule (page 24)
+  slide16(pres, data);  // Inclusions & Exclusions (page 25)
+  slide17(pres, data);  // Terms & Conditions (page 26)
+  slideHourlyRates(pres, data); // Hourly Rates & Lithography Charges (page 27)
+  slideBIMFee(pres, data);      // BIM Fee Schedule (page 28)
   slide18(pres, data);  // Thank You
 
   const fileName = path.join(os.tmpdir(), `H2X_FeeProposal_${(data.projectName || 'Project').replace(/\s+/g,'_')}_v${data.version || '01'}.pptx`);
