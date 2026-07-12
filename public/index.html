@@ -24,6 +24,27 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
 .logo-studio{font-size:8px;color:var(--terra);letter-spacing:4px}
 .header-sub{font-size:11px;color:var(--gold);font-family:'Playfair Display',serif}
 
+/* AI PROMPT BUTTON + MODAL */
+.btn-ai-prompt{margin-left:auto;background:var(--terra);color:#fff;border:none;padding:9px 16px;border-radius:5px;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer}
+.btn-ai-prompt:hover{background:var(--terra-dk)}
+.prompt-modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,20,.65);z-index:200;align-items:center;justify-content:center;padding:24px}
+.prompt-modal-overlay.open{display:flex}
+.prompt-modal{background:#fff;border-radius:8px;max-width:820px;width:100%;max-height:88vh;overflow-y:auto;padding:0}
+.prompt-modal-head{position:sticky;top:0;background:#fff;padding:20px 24px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;z-index:2}
+.prompt-modal-head h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:400;margin:0}
+.prompt-modal-head .sub{font-size:11px;color:var(--gray);margin-top:2px}
+.prompt-modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray);line-height:1}
+.prompt-modal-body{padding:18px 24px 24px}
+.prompt-card{border:1px solid var(--border);border-radius:6px;margin-bottom:14px;overflow:hidden}
+.prompt-card-head{background:var(--offwhite);padding:9px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.prompt-card-title{font-size:11px;font-weight:600;color:var(--terra-dk);text-transform:uppercase;letter-spacing:.5px}
+.prompt-card-ratio{font-size:10px;color:var(--gray);background:#fff;border:1px solid var(--border);padding:2px 8px;border-radius:10px}
+.prompt-card textarea{width:100%;border:none;padding:12px 14px;font-family:'Inter',sans-serif;font-size:12px;line-height:1.6;color:var(--black);resize:vertical;min-height:100px;background:#fff}
+.prompt-copy-btn{font-size:11px;padding:5px 12px;border-radius:4px;border:1px solid var(--terra);background:#fff;color:var(--terra-dk);cursor:pointer;margin:0 14px 12px auto;display:block}
+.prompt-copy-btn:hover{background:var(--terra);color:#fff}
+.prompt-copy-btn.copied{background:#4a7c4a;border-color:#4a7c4a;color:#fff}
+.prompt-modal-footnote{font-size:11px;color:var(--gray);line-height:1.6;margin-top:4px}
+
 /* LAYOUT */
 .wrap{max-width:1160px;margin:0 auto;padding:28px 20px 100px;display:grid;grid-template-columns:260px 1fr;gap:20px;align-items:start}
 
@@ -208,7 +229,22 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
     <span class="logo-studio">STUDIO</span>
   </div>
   <div class="header-sub">Fee Proposal Generator</div>
+  <button class="btn-ai-prompt" onclick="openPromptModal()">🎨 Prompt ảnh AI</button>
 </header>
+
+<!-- AI IMAGE PROMPT MODAL -->
+<div class="prompt-modal-overlay" id="promptModalOverlay" onclick="if(event.target===this) closePromptModal()">
+  <div class="prompt-modal">
+    <div class="prompt-modal-head">
+      <div>
+        <h2>Prompt tạo ảnh AI</h2>
+        <div class="sub">Copy sang ChatGPT (hoặc công cụ tạo ảnh khác) — tự động khớp Typology & Design Language đã nhập</div>
+      </div>
+      <button class="prompt-modal-close" onclick="closePromptModal()">✕</button>
+    </div>
+    <div class="prompt-modal-body" id="promptModalBody"></div>
+  </div>
+</div>
 
 <div class="wrap">
 
@@ -233,13 +269,13 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
     </div>
     <div class="nav-item" data-s="4" onclick="go(4)">
       <div class="nav-num">4</div>
-      <span>Zoning Programme</span>
-      <span class="nav-badge badge-blue">AI</span>
+      <span>Indicative Zoning Programme</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
     </div>
     <div class="nav-item" data-s="5" onclick="go(5)">
       <div class="nav-num">5</div>
       <span>Design Language</span>
-      <span class="nav-badge badge-blue">AI</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
     </div>
     <div class="nav-item" data-s="6" onclick="go(6)">
       <div class="nav-num">6</div>
@@ -253,7 +289,7 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
     </div>
     <div class="nav-item" data-s="8" onclick="go(8)">
       <div class="nav-num">8</div>
-      <span>Design Process</span>
+      <span>Design Process & Workflow</span>
       <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
     </div>
     <div class="nav-item" data-s="9" onclick="go(9)">
@@ -273,55 +309,95 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
     </div>
     <div class="nav-item" data-s="12" onclick="go(12)">
       <div class="nav-num">12</div>
-      <span>Document Issue Schedule</span>
-      <span class="nav-badge badge-red">●</span>
+      <span>Briefing and Mobilisation</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
     </div>
     <div class="nav-item" data-s="13" onclick="go(13)">
       <div class="nav-num">13</div>
-      <span>Design Fee</span>
-      <span class="nav-badge badge-red">●</span>
+      <span>Feasibility (Pre-Concept Design)</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
     </div>
     <div class="nav-item" data-s="14" onclick="go(14)">
       <div class="nav-num">14</div>
-      <span>Detailed Design Stage</span>
+      <span>Concept Design</span>
       <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
     </div>
     <div class="nav-item" data-s="15" onclick="go(15)">
       <div class="nav-num">15</div>
-      <span>Detailed SOW List</span>
+      <span>Schematic Design</span>
       <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
     </div>
     <div class="nav-item" data-s="16" onclick="go(16)">
       <div class="nav-num">16</div>
-      <span>Add-on Workstreams</span>
+      <span>Development Design</span>
       <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
     </div>
     <div class="nav-item" data-s="17" onclick="go(17)">
       <div class="nav-num">17</div>
-      <span>Add-on Fee Table</span>
-      <span class="nav-badge badge-red">●</span>
+      <span>Construction Documents</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
     </div>
     <div class="nav-item" data-s="18" onclick="go(18)">
       <div class="nav-num">18</div>
-      <span>Payment Schedule</span>
-      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+      <span>Document Issue Schedule</span>
+      <span class="nav-badge badge-red">●</span>
     </div>
     <div class="nav-item" data-s="19" onclick="go(19)">
       <div class="nav-num">19</div>
-      <span>Incl. & Exclusions</span>
-      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+      <span>Design Fee</span>
+      <span class="nav-badge badge-red">●</span>
     </div>
     <div class="nav-item" data-s="20" onclick="go(20)">
       <div class="nav-num">20</div>
-      <span>Terms & Conditions</span>
+      <span>Detailed Design Stage</span>
       <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
     </div>
     <div class="nav-item" data-s="21" onclick="go(21)">
       <div class="nav-num">21</div>
+      <span>Detailed SOW List</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+    </div>
+    <div class="nav-item" data-s="22" onclick="go(22)">
+      <div class="nav-num">22</div>
+      <span>Add-on Workstreams</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+    </div>
+    <div class="nav-item" data-s="23" onclick="go(23)">
+      <div class="nav-num">23</div>
+      <span>Add-on Fee Table</span>
+      <span class="nav-badge badge-red">●</span>
+    </div>
+    <div class="nav-item" data-s="24" onclick="go(24)">
+      <div class="nav-num">24</div>
+      <span>Payment Schedule</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+    </div>
+    <div class="nav-item" data-s="25" onclick="go(25)">
+      <div class="nav-num">25</div>
+      <span>Inclusions & Exclusions</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+    </div>
+    <div class="nav-item" data-s="26" onclick="go(26)">
+      <div class="nav-num">26</div>
+      <span>Terms & Conditions</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+    </div>
+    <div class="nav-item" data-s="27" onclick="go(27)">
+      <div class="nav-num">27</div>
+      <span>Hourly Rates & Lithography Charges</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+    </div>
+    <div class="nav-item" data-s="28" onclick="go(28)">
+      <div class="nav-num">28</div>
+      <span>BIM Fee Schedule</span>
+      <span class="nav-badge" style="background:#2a2a2a;color:#666">auto</span>
+    </div>
+    <div class="nav-item" data-s="29" onclick="go(29)">
+      <div class="nav-num">29</div>
       <span>Thank You / Contact</span>
       <span class="nav-badge badge-red">●</span>
     </div>
-    <div class="nav-item" data-s="22" onclick="go(22)" style="border-top:1px solid #3A3530;margin-top:8px">
+    <div class="nav-item" data-s="30" onclick="go(30)" style="border-top:1px solid #3A3530;margin-top:8px">
       <div class="nav-num" style="background:var(--terra);color:#fff">↓</div>
       <span style="color:var(--terra);font-weight:600">Generate PPTX</span>
     </div>
@@ -450,23 +526,23 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
         <div class="scope-wrap">
           <div class="scope-btn active" id="scopeA" onclick="setScope('A')">
             <span class="sl">Kịch bản A — Concept → Schematic</span>
-            <span class="sd">Phổ biến nhất · F&B, Lounge, Gallery nhỏ–vừa · ~8 tuần · Lighting (Optional)</span>
+            <span class="sd">Phổ biến nhất · F&B, Lounge, Gallery nhỏ–vừa · ~11 tuần · Lighting (Optional)</span>
           </div>
           <div class="scope-btn" id="scopeB" onclick="setScope('B')">
             <span class="sl">Kịch bản B — Full Services (không Lighting)</span>
-            <span class="sd">Resort, Hotel, Large Venue · Concept → Supervision · ~19 tuần · Lighting tách riêng</span>
+            <span class="sd">Resort, Hotel, Large Venue · Concept → Supervision · ~28 tuần · Lighting tách riêng</span>
           </div>
           <div class="scope-btn" id="scopeC" onclick="setScope('C')">
             <span class="sl">Kịch bản C — Full Services + Lighting (Optional)</span>
-            <span class="sd">Như Kịch bản B, cộng thêm Lighting (Optional) trong Concept · ~19 tuần</span>
+            <span class="sd">Như Kịch bản B, cộng thêm Lighting (Optional) trong Concept · ~28 tuần</span>
           </div>
         </div>
         <input type="hidden" id="scope" value="A"/>
         <div id="scopeInfo" class="team-box">
-          <strong>Included:</strong> Briefing & Mobilization · Concept Design + Lighting (Optional) · Schematic Design<br>
-          <strong>Optional:</strong> Design Development / CD / BOQ · Tender Support · Site Supervision<br>
-          <strong>Fee ratio:</strong> Mobilization 15% · Concept 50% · Schematic 35%<br>
-          <strong>Payment:</strong> Upon signing 20% · Concept approval 45% · Schematic approval 35%
+          <strong>Included:</strong> Appraisal and Briefing · Feasibility & Preliminary Concept · Concept + Lighting (Optional) · Schematic<br>
+          <strong>Optional:</strong> DD / CD / BOQ · Author Supervision<br>
+          <strong>Fee ratio:</strong> Mobilization 15% · Feasibility & Preliminary Concept Design 20% · Final Concept Design 30% · Schematic 35%<br>
+          <strong>Payment:</strong> Signing 15% · Feasibility & Preliminary Concept approval 20% · Final Concept approval 30% · Schematic approval 35%
         </div>
         <div class="divider"></div>
         <div class="field">
@@ -716,12 +792,15 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
       </div>
       <div class="sec-body">
         <div class="team-box">
-          <strong>Creative Director</strong> — Gia Huy (Michael) · M.Architect · 23+ yrs · sets vision & design direction<br>
-          <strong>Lead Designer — Concept</strong> — Nguyễn Mạnh Hùng (Henry) · Spatial concept, narrative & guest journey<br>
-          <strong>Lighting Designer (In-house)</strong> — [Lighting Lead] · Atmosphere, fixture & control strategy<br>
+          <strong>Chief Creative Officer</strong> — Gia Huy (Michael) · M.Architect · 24+ yrs<br>
+          <strong>Chief Operating Officer</strong> — Nguyễn Văn Toàn (Karo) · Architect · 20+ yrs<br>
+          <strong>Concept Lead</strong> — Nguyễn Mạnh Hùng (Henry) · Spatial concept, narrative & guest journey<br>
           <strong>Head of FF&E</strong> — Nguyễn Thị Thúy Vy (Vivian) · Furniture, fixtures & material curation<br>
           <strong>Technical Lead</strong> — Nguyễn Vương Linh (Lucas) · Schematic documentation & consultant coordination<br>
-          <strong>3D Visualisation & PM</strong> — Đỗ Danh Sơn · Photorealistic renders · schedule, reviews & delivery
+          <strong>3D Visualisation & PM</strong> — Đỗ Danh Sơn · Photorealistic renders · schedule, reviews & delivery<br>
+          <strong>Lighting Designer</strong> — [Lighting Lead] · Atmosphere, fixture & control strategy<br>
+          <strong>Audio Visual Designer</strong> — [AV Lead] · Soundscape, AV & display concept<br>
+          <strong>Brand Lead</strong> — [Brand Lead] · Naming, identity & brand guidelines
         </div>
       </div>
       <div class="sec-footer">
@@ -742,11 +821,10 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
       </div>
       <div class="sec-body">
         <div class="team-box">
-          Nội dung tự điều chỉnh theo <strong>Kịch bản A hoặc B</strong> đã chọn ở Slide 03.<br><br>
-          <strong>Cadence:</strong> First Draft → Consolidated Review → Final Approval → Stage sign-off<br>
-          <strong>Tools:</strong> Revit + Enscape · Photorealistic 3D key views from Concept<br>
-          <strong>Timeline A:</strong> Mobilization ~1 wk · Concept ~4 wks · Schematic ~4 wks = 9–11 wks<br>
-          <strong>Timeline B:</strong> Above + DD ~6 wks · CD/BOQ ~8 wks · Supervision: project duration
+          Nội dung tự điều chỉnh theo <strong>Kịch bản A / B / C</strong> đã chọn ở Slide 03 — số bước trong sơ đồ flow và số card "Our Process" tự khớp (4 bước cho A, 8 bước cho B/C).<br><br>
+          <strong>Flow diagram:</strong> các bước nối tiếp nhau, mỗi bước → First Draft → Review → Final Approval<br>
+          <strong>Our Methodology:</strong> đoạn mô tả quy trình làm việc chung (cố định)<br>
+          <strong>Our Process:</strong> 1 card mô tả ngắn cho từng bước, tự lấy nội dung theo Kịch bản đã chọn
         </div>
       </div>
       <div class="sec-footer">
@@ -809,7 +887,7 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
       </div>
       <div class="sec-body">
         <div class="team-box">
-          Bảng liệt kê Lead phụ trách và Key Deliverables cho từng Phase (Briefing, Concept, Schematic, và với Kịch bản B/C thêm Design Development, Construction Documents, Tender Support) — tự động, không cần nhập liệu.
+          Bảng liệt kê Lead phụ trách và Key Deliverables cho từng Phase (Appraisal & Briefing, Feasibility & Preliminary Concept, Final Concept, Schematic, và với Kịch bản B/C thêm Design Development, Construction Documents, BOQ, Author Supervision) — tự động, không cần nhập liệu.
         </div>
       </div>
       <div class="sec-footer">
@@ -819,11 +897,93 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
     </div>
 
     <!-- ══════════════════════════════════════════════ -->
-    <!-- S9: DOCUMENT ISSUE SCHEDULE — 🔴 USER INPUT (weeks editable) -->
+    <!-- S12-17: PHASE EXPLAINER SLIDES — AUTO -->
     <!-- ══════════════════════════════════════════════ -->
     <div class="section" id="s12">
-      <div class="sec-head red-mode">
+      <div class="sec-head auto-mode">
         <div class="sec-num">SLIDE 12</div>
+        <div class="sec-title">Briefing and Mobilisation</div>
+        <div class="sec-sub">Purpose · Covered within the stage · Deliverables — tự động, bản tiếng Anh</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body"><div class="team-box">Diễn giải chi tiết giai đoạn Briefing and Mobilisation — tự động tạo, không cần nhập liệu.</div></div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(11)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(13)">Tiếp theo →</button>
+      </div>
+    </div>
+    <div class="section" id="s13">
+      <div class="sec-head auto-mode">
+        <div class="sec-num">SLIDE 13</div>
+        <div class="sec-title">Feasibility (Pre-Concept Design)</div>
+        <div class="sec-sub">Purpose · Covered within the stage · Deliverables — tự động, bản tiếng Anh</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body"><div class="team-box">Diễn giải chi tiết giai đoạn Feasibility (Pre-Concept Design) — tự động tạo, không cần nhập liệu.</div></div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(12)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(14)">Tiếp theo →</button>
+      </div>
+    </div>
+    <div class="section" id="s14">
+      <div class="sec-head auto-mode">
+        <div class="sec-num">SLIDE 14</div>
+        <div class="sec-title">Concept Design</div>
+        <div class="sec-sub">Purpose · Covered within the stage · Deliverables — tự động, bản tiếng Anh</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body"><div class="team-box">Diễn giải chi tiết giai đoạn Concept Design — tự động tạo, không cần nhập liệu.</div></div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(13)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(15)">Tiếp theo →</button>
+      </div>
+    </div>
+    <div class="section" id="s15">
+      <div class="sec-head auto-mode">
+        <div class="sec-num">SLIDE 15</div>
+        <div class="sec-title">Schematic Design</div>
+        <div class="sec-sub">Purpose · Covered within the stage · Deliverables — tự động, bản tiếng Anh</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body"><div class="team-box">Diễn giải chi tiết giai đoạn Schematic Design — tự động tạo, không cần nhập liệu.</div></div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(14)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(16)">Tiếp theo →</button>
+      </div>
+    </div>
+    <div class="section" id="s16">
+      <div class="sec-head auto-mode">
+        <div class="sec-num">SLIDE 16</div>
+        <div class="sec-title">Development Design</div>
+        <div class="sec-sub">Purpose · Covered within the stage · Deliverables — tự động, bản tiếng Anh · Kịch bản B/C</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body"><div class="team-box">Diễn giải chi tiết giai đoạn Development Design — tự động tạo, không cần nhập liệu.</div></div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(15)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(17)">Tiếp theo →</button>
+      </div>
+    </div>
+    <div class="section" id="s17">
+      <div class="sec-head auto-mode">
+        <div class="sec-num">SLIDE 17</div>
+        <div class="sec-title">Construction Documents</div>
+        <div class="sec-sub">Purpose · Covered within the stage · Deliverables — tự động, bản tiếng Anh · Kịch bản B/C</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body"><div class="team-box">Diễn giải chi tiết giai đoạn Construction Documents — tự động tạo, không cần nhập liệu.</div></div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(16)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(18)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S9: DOCUMENT ISSUE SCHEDULE — 🔴 USER INPUT (weeks editable) -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s18">
+      <div class="sec-head red-mode">
+        <div class="sec-num">SLIDE 18</div>
         <div class="sec-title">Document Issue Schedule</div>
         <div class="sec-sub">Preliminary schedule — hạng mục tự khớp theo Kịch bản A/B/C ở Slide 03, số tuần bạn có thể chỉnh</div>
         <div class="mode-badge red">● Nhập thông tin</div>
@@ -846,17 +1006,17 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
         </p>
       </div>
       <div class="sec-footer">
-        <button class="btn btn-back" onclick="go(11)">← Quay lại</button>
-        <button class="btn btn-next" onclick="go(13)">Tiếp theo →</button>
+        <button class="btn btn-back" onclick="go(17)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(19)">Tiếp theo →</button>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════ -->
     <!-- S10: FEE — 🔴 USER INPUT -->
     <!-- ══════════════════════════════════════════════ -->
-    <div class="section" id="s13">
+    <div class="section" id="s19">
       <div class="sec-head red-mode">
-        <div class="sec-num">SLIDE 13</div>
+        <div class="sec-num">SLIDE 19</div>
         <div class="sec-title">Design Fee</div>
         <div class="sec-sub">Nhập tổng phí — bảng phân bổ tự tính theo tỉ lệ chuẩn</div>
         <div class="mode-badge red">● Nhập thông tin</div>
@@ -887,87 +1047,85 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
         </div>
       </div>
       <div class="sec-footer">
-        <button class="btn btn-back" onclick="go(12)">← Quay lại</button>
-        <button class="btn btn-next" onclick="go(14)">Tiếp theo →</button>
+        <button class="btn btn-back" onclick="go(18)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(20)">Tiếp theo →</button>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════ -->
     <!-- S11: DETAILED DESIGN STAGE — AUTO -->
     <!-- ══════════════════════════════════════════════ -->
-    <div class="section" id="s14">
+    <div class="section" id="s20">
       <div class="sec-head auto-mode">
-        <div class="sec-num">SLIDE 14</div>
+        <div class="sec-num">SLIDE 20</div>
         <div class="sec-title">Detailed Design Stage</div>
         <div class="sec-sub">Design stage breakdown by package — tự động, chia theo Weeks/Ratio</div>
         <div class="mode-badge auto">✦ Auto-generate</div>
       </div>
       <div class="sec-body">
         <div class="team-box">
-          Bảng chi tiết công việc chia theo 2 Stage lớn — tự động tạo, không cần nhập liệu, bản tiếng Anh:<br><br>
-          <strong>Stage 1 — Concept Design & 3D Rendering (60%):</strong> Appraisal and Briefing · Feasibility & Preliminary Concept Design · Final Concept Design<br>
-          <strong>Stage 2 — Development Design (40%):</strong> Schematic Design · Design Development · Construction Documents · BOQ
+          Bảng chi tiết công việc — tự động tạo, <strong>đồng bộ 100% với số tuần & tỉ lệ % ở Document Issue Schedule</strong> (Slide 18), theo đúng Kịch bản A/B/C đã chọn. Không cần nhập gì thêm ở đây — chỉnh số tuần thì chỉnh ở Slide 18, bảng này tự cập nhật theo.
         </div>
       </div>
       <div class="sec-footer">
-        <button class="btn btn-back" onclick="go(13)">← Quay lại</button>
-        <button class="btn btn-next" onclick="go(15)">Tiếp theo →</button>
+        <button class="btn btn-back" onclick="go(19)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(21)">Tiếp theo →</button>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════ -->
     <!-- S12: DETAILED SOW LIST — AUTO -->
     <!-- ══════════════════════════════════════════════ -->
-    <div class="section" id="s15">
+    <div class="section" id="s21">
       <div class="sec-head auto-mode">
-        <div class="sec-num">SLIDE 15</div>
+        <div class="sec-num">SLIDE 21</div>
         <div class="sec-title">Detailed SOW List</div>
         <div class="sec-sub">Scope of Works breakdown, mapped to Kịch bản A/B/C — tự động, bản tiếng Anh</div>
         <div class="mode-badge auto">✦ Auto-generate</div>
       </div>
       <div class="sec-body">
         <div class="team-box">
-          Bảng liệt kê từng hạng mục công việc chi tiết (Appraisal, Concept, Schematic, Design Development, Construction, Handover...), đánh dấu ✓ theo <strong>Kịch bản A / B / C</strong>.<br><br>
+          Bảng liệt kê từng hạng mục công việc chi tiết (Appraisal, Feasibility, Final Concept, Schematic, Design Development, Construction, Author Supervision, Handover...), đánh dấu ✓ theo <strong>Kịch bản A / B / C</strong> — dấu ✓ phản ánh đúng thực tế: Kịch bản A chỉ có ✓ tới hết Schematic, Kịch bản B/C có ✓ đầy đủ tới Author Supervision.<br><br>
           Cột tương ứng với Kịch bản đã chọn ở Slide 03 sẽ được tô đậm màu terracotta để làm nổi bật phạm vi đang đề xuất trong báo giá này.
         </div>
       </div>
       <div class="sec-footer">
-        <button class="btn btn-back" onclick="go(14)">← Quay lại</button>
-        <button class="btn btn-next" onclick="go(16)">Tiếp theo →</button>
+        <button class="btn btn-back" onclick="go(20)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(22)">Tiếp theo →</button>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════ -->
     <!-- S10: ADD-ON VALUE — AUTO -->
     <!-- ══════════════════════════════════════════════ -->
-    <div class="section" id="s16">
+    <div class="section" id="s22">
       <div class="sec-head auto-mode">
-        <div class="sec-num">SLIDE 16</div>
+        <div class="sec-num">SLIDE 22</div>
         <div class="sec-title">Add-on Workstreams</div>
         <div class="sec-sub">Branding / Signage / AV — slide value pitch tự động. Chọn add-on ở Slide 11.</div>
         <div class="mode-badge auto">✦ Auto-generate</div>
       </div>
       <div class="sec-body">
         <div class="team-box">
-          Slide này tự động generate 3 card:<br>
+          Slide này tự động generate 3 card, <strong>luôn xuất hiện trong mọi bản PPTX</strong> (kể cả khi không chọn add-on nào — khi đó ghi "Available on request" thay vì số tiền cụ thể):<br>
           <strong>Brand Identity & Naming</strong> (Ziva) — Naming · Logo · Core identity · Brand guidelines<br>
           <strong>Signage & Wayfinding</strong> (Ziva) — Bilingual wayfinding · Signage concept · Specification<br>
           <strong>Audio-Visual Design</strong> (H2X) — Soundscape · AV integration · Zoning of sound<br><br>
-          Slide chỉ xuất hiện nếu có ít nhất 1 add-on được chọn ở Slide 11.
+          Tick chọn ở phần dưới nếu muốn báo giá cụ thể cho add-on nào; add-on đã chọn sẽ tự cộng vào Grand Total ở Payment Schedule.
         </div>
       </div>
       <div class="sec-footer">
-        <button class="btn btn-back" onclick="go(15)">← Quay lại</button>
-        <button class="btn btn-next" onclick="go(17)">Tiếp theo →</button>
+        <button class="btn btn-back" onclick="go(21)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(23)">Tiếp theo →</button>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════ -->
     <!-- S11: ADD-ON FEE — 🔴 USER INPUT -->
     <!-- ══════════════════════════════════════════════ -->
-    <div class="section" id="s17">
+    <div class="section" id="s23">
       <div class="sec-head red-mode">
-        <div class="sec-num">SLIDE 17</div>
+        <div class="sec-num">SLIDE 23</div>
         <div class="sec-title">Add-on Fee Table</div>
         <div class="sec-sub">Chọn add-on và nhập phí — Grand Total tự tính</div>
         <div class="mode-badge red">● Nhập thông tin</div>
@@ -1025,17 +1183,17 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
         </div>
       </div>
       <div class="sec-footer">
-        <button class="btn btn-back" onclick="go(16)">← Quay lại</button>
-        <button class="btn btn-next" onclick="go(18)">Tiếp theo →</button>
+        <button class="btn btn-back" onclick="go(22)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(24)">Tiếp theo →</button>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════ -->
     <!-- S12: PAYMENT — AUTO -->
     <!-- ══════════════════════════════════════════════ -->
-    <div class="section" id="s18">
+    <div class="section" id="s24">
       <div class="sec-head auto-mode">
-        <div class="sec-num">SLIDE 18</div>
+        <div class="sec-num">SLIDE 24</div>
         <div class="sec-title">Payment Schedule</div>
         <div class="sec-sub">Tự tính theo phí và scope đã nhập</div>
         <div class="mode-badge auto">✦ Auto-generate</div>
@@ -1044,55 +1202,47 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
         <div id="paymentPreview" class="team-box"></div>
       </div>
       <div class="sec-footer">
-        <button class="btn btn-back" onclick="go(17)">← Quay lại</button>
-        <button class="btn btn-next" onclick="go(19)">Tiếp theo →</button>
+        <button class="btn btn-back" onclick="go(23)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(25)">Tiếp theo →</button>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════ -->
     <!-- S13: INCL/EXCL — AUTO -->
     <!-- ══════════════════════════════════════════════ -->
-    <div class="section" id="s19">
+    <div class="section" id="s25">
       <div class="sec-head auto-mode">
-        <div class="sec-num">SLIDE 19</div>
+        <div class="sec-num">SLIDE 25</div>
         <div class="sec-title">Inclusions & Exclusions</div>
-        <div class="sec-sub">Nội dung chuẩn H2X — tự động generate</div>
+        <div class="sec-sub">Tự động generate — nội dung khác nhau theo Kịch bản A / B / C đã chọn ở Slide 03</div>
         <div class="mode-badge auto">✦ Auto-generate</div>
       </div>
       <div class="sec-body">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
           <div class="team-box">
             <strong style="color:var(--terra)">INCLUSIONS</strong><br>
-            + Interior design — Concept & Schematic stages<br>
-            + Lighting Design — concept & schematic (in the design fee)<br>
-            + Zoning, narrative, moodboards<br>
-            + 3D key-view renders · material & FF&E palette<br>
-            + Plans, RCP, elevations & outline specifications<br>
-            + Brand, Signage & AV — concept (if selected)
+            <em>Kịch bản A:</em> Interior design tới hết Schematic · Lighting Design (Optional, trong phí thiết kế) · Feasibility, zoning, narrative, moodboards · 3D renders · Plans, RCP, elevations<br><br>
+            <em>Kịch bản B/C:</em> Full service tới hết Author Supervision · Kịch bản C có thêm Lighting (Optional) trong phí; Kịch bản B thì Lighting tách riêng
           </div>
           <div class="team-box">
             <strong style="color:var(--gray)">EXCLUSIONS</strong><br>
-            + DD / CD / BOQ (follow-on addendum)<br>
-            + Production of branding, signage & AV beyond concept<br>
-            + MEP, structural & façade engineering<br>
-            + Kitchen, acoustics & fire engineering<br>
-            + Permits · taxes/VAT<br>
-            + Reimbursables: travel, printing, mock-ups
+            <em>Kịch bản A:</em> DD / CD / BOQ / Author Supervision (follow-on addendum)<br><br>
+            <em>Kịch bản B/C:</em> Xây dựng thực tế, MEP/kết cấu/mặt dựng, bếp/âm học/PCCC, giấy phép, thuế — luôn loại trừ ở mọi Kịch bản
           </div>
         </div>
       </div>
       <div class="sec-footer">
-        <button class="btn btn-back" onclick="go(18)">← Quay lại</button>
-        <button class="btn btn-next" onclick="go(20)">Tiếp theo →</button>
+        <button class="btn btn-back" onclick="go(24)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(26)">Tiếp theo →</button>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════ -->
     <!-- S14: TERMS — AUTO -->
     <!-- ══════════════════════════════════════════════ -->
-    <div class="section" id="s20">
+    <div class="section" id="s26">
       <div class="sec-head auto-mode">
-        <div class="sec-num">SLIDE 20</div>
+        <div class="sec-num">SLIDE 26</div>
         <div class="sec-title">Terms & Conditions</div>
         <div class="sec-sub">Điều khoản chuẩn — tự động generate</div>
         <div class="mode-badge auto">✦ Auto-generate</div>
@@ -1109,17 +1259,47 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
         </div>
       </div>
       <div class="sec-footer">
-        <button class="btn btn-back" onclick="go(19)">← Quay lại</button>
-        <button class="btn btn-next" onclick="go(21)">Tiếp theo →</button>
+        <button class="btn btn-back" onclick="go(25)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(27)">Tiếp theo →</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- S27-28: APPENDIX SLIDES — AUTO -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="section" id="s27">
+      <div class="sec-head auto-mode">
+        <div class="sec-num">SLIDE 27</div>
+        <div class="sec-title">Hourly Rates & Lithography Charges</div>
+        <div class="sec-sub">Appendix C & D — tự động, đơn giá giờ công & phí in ấn (USD)</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body"><div class="team-box">Bảng đơn giá giờ công theo cấp bậc + phí in ấn/lithography — tự động tạo, không cần nhập liệu.</div></div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(26)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(28)">Tiếp theo →</button>
+      </div>
+    </div>
+    <div class="section" id="s28">
+      <div class="sec-head auto-mode">
+        <div class="sec-num">SLIDE 28</div>
+        <div class="sec-title">BIM Fee Schedule</div>
+        <div class="sec-sub">Phụ phí khi triển khai dự án bằng BIM — tự động</div>
+        <div class="mode-badge auto">✦ Auto-generate</div>
+      </div>
+      <div class="sec-body"><div class="team-box">Bảng đơn giá BIM theo vai trò + tiêu chuẩn LOD — tự động tạo, không cần nhập liệu.</div></div>
+      <div class="sec-footer">
+        <button class="btn btn-back" onclick="go(27)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(29)">Tiếp theo →</button>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════ -->
     <!-- S15: THANK YOU — 🔴 USER INPUT -->
     <!-- ══════════════════════════════════════════════ -->
-    <div class="section" id="s21">
+    <div class="section" id="s29">
       <div class="sec-head red-mode">
-        <div class="sec-num">SLIDE 21</div>
+        <div class="sec-num">SLIDE 29</div>
         <div class="sec-title">Thank You / Contact</div>
         <div class="sec-sub">Thông tin liên hệ và lời kết trên slide cuối</div>
         <div class="mode-badge red">● Nhập thông tin</div>
@@ -1163,15 +1343,15 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
         </div>
       </div>
       <div class="sec-footer">
-        <button class="btn btn-back" onclick="go(20)">← Quay lại</button>
-        <button class="btn btn-next" onclick="go(22)">Xem lại & Generate →</button>
+        <button class="btn btn-back" onclick="go(28)">← Quay lại</button>
+        <button class="btn btn-next" onclick="go(30)">Xem lại & Generate →</button>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════════ -->
     <!-- S16: GENERATE -->
     <!-- ══════════════════════════════════════════════ -->
-    <div class="section" id="s22">
+    <div class="section" id="s30">
       <div class="sec-head" style="background:#0a1a0a;border-bottom-color:#1a3a1a">
         <div class="sec-num" style="color:#6dbf6d">GENERATE</div>
         <div class="sec-title">Xem lại & Xuất PPTX</div>
@@ -1190,7 +1370,7 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
         </div>
       </div>
       <div class="sec-footer">
-        <button class="btn btn-back" onclick="go(21)">← Quay lại</button>
+        <button class="btn btn-back" onclick="go(29)">← Quay lại</button>
         <span></span>
       </div>
     </div>
@@ -1201,7 +1381,7 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
 <script>
 // ─── STATE ───────────────────────────────────────────────────────
 let cur = 1;
-const TOTAL = 22;
+const TOTAL = 30;
 const sel = {Brand:false, Signage:false, AV:false};
 let aiZoneData = null, aiDesignData = null;
 let uploadedImages = {}; // { hero, mood1, mood2, mood3, closing } -> base64 data URLs
@@ -1348,8 +1528,8 @@ function go(n) {
   cur = n;
   document.getElementById(`s${n}`).classList.add('active');
   document.getElementById('prog').style.width = Math.round(n/TOTAL*100)+'%';
-  if(n===18) buildPaymentPreview();
-  if(n===22) buildSummary();
+  if(n===24) buildPaymentPreview();
+  if(n===30) buildSummary();
   window.scrollTo(0,0);
 }
 
@@ -1360,9 +1540,9 @@ function setScope(v){
   document.getElementById('scopeB').classList.toggle('active',v==='B');
   document.getElementById('scopeC').classList.toggle('active',v==='C');
   const infos = {
-    A: '<strong>Included:</strong> Briefing · Concept + Lighting (Optional) · Schematic<br><strong>Optional:</strong> DD / CD / BOQ · Tender · Supervision<br><strong>Fee ratio:</strong> Mobilization 15% · Concept 50% · Schematic 35%<br><strong>Payment:</strong> Signing 20% · Concept approval 45% · Schematic approval 35%',
-    B: '<strong>Included (full, no Lighting):</strong> Briefing · Concept · Schematic · DD · CD+BOQ · Tender · Supervision<br><strong>Fee ratio:</strong> Mob 5% · Concept 20% · Schematic 20% · DD 25% · CD 20% · Supervision 10%<br><strong>Payment:</strong> Signing 10% · Concept 20% · Schematic 20% · DD 20% · CD 20% · Completion 10%<br><strong>Lighting:</strong> Offered separately as an add-on',
-    C: '<strong>Included (full + Lighting Optional):</strong> Briefing · Concept + Lighting (Optional) · Schematic · DD · CD+BOQ · Tender · Supervision<br><strong>Fee ratio:</strong> Mob 5% · Concept 20% · Schematic 20% · DD 25% · CD 20% · Supervision 10%<br><strong>Payment:</strong> Signing 10% · Concept 20% · Schematic 20% · DD 20% · CD 20% · Completion 10%',
+    A: '<strong>Included:</strong> Appraisal and Briefing · Feasibility & Preliminary Concept · Concept + Lighting (Optional) · Schematic<br><strong>Optional:</strong> DD / CD / BOQ · Author Supervision<br><strong>Fee ratio:</strong> Mobilization 15% · Feasibility & Preliminary Concept Design 20% · Final Concept Design 30% · Schematic 35%<br><strong>Payment:</strong> Signing 15% · Feasibility & Preliminary Concept approval 20% · Final Concept approval 30% · Schematic approval 35%',
+    B: '<strong>Included (full, no Lighting):</strong> Appraisal and Briefing · Feasibility & Preliminary Concept · Final Concept · Schematic · Design Development · Construction Documents · BOQ (Bill of Quantity) · Author Supervision<br><strong>Fee ratio:</strong> Appraisal and Briefing 15% · Feasibility & Preliminary Concept 20% · Final Concept 20% · Schematic 15% · Design Development 10% · Construction Documents 10% · BOQ (Bill of Quantity) 5% · Author Supervision 5%<br><strong>Payment:</strong> Appraisal and Briefing 15% · Feasibility & Preliminary Concept 20% · Final Concept 20% · Schematic 15% · Design Development 10% · Construction Documents 10% · BOQ (Bill of Quantity) 5% · Author Supervision 5%<br><strong>Lighting:</strong> Offered separately as an add-on',
+    C: '<strong>Included (full + Lighting Optional):</strong> Appraisal and Briefing · Feasibility & Pre. Concept · Final Concept + Lighting (Optional) · Schematic · Design Development · Construction Documents · BOQ (Bill of Quantity) · Author Supervision<br><strong>Fee ratio:</strong> Appraisal and Briefing 15% · Feasibility & Pre. Concept 20% · Final Concept + Lighting (Optional) 20% · Schematic 15% · Design Development 10% · Construction Documents 10% · BOQ (Bill of Quantity) 5% · Author Supervision 5%<br><strong>Payment:</strong> Appraisal and Briefing 15% · Feasibility & Pre. Concept 20% · Final Concept + Lighting (Optional) 20% · Schematic 15% · Design Development 10% · Construction Documents 10% · BOQ (Bill of Quantity) 5% · Author Supervision 5%',
   };
   document.getElementById('scopeInfo').innerHTML=infos[v]||infos.A;
   calcFee();
@@ -1370,17 +1550,19 @@ function setScope(v){
 }
 
 // ─── FEE CALC ────────────────────────────────────────────────────
-const RATIO_A=[{l:'Briefing & Mobilization',p:.15},{l:'Concept Design + Lighting (Optional)',p:.50},{l:'Schematic Design',p:.35}];
-const RATIO_B=[{l:'Briefing & Mobilization',p:.05},{l:'Concept Design',p:.20},{l:'Schematic Design',p:.20},{l:'Design Development',p:.25},{l:'Construction Documents + BOQ',p:.20},{l:'Tender Support + Site Supervision',p:.10}];
-const RATIO_C=[{l:'Briefing & Mobilization',p:.05},{l:'Concept Design + Lighting (Optional)',p:.20},{l:'Schematic Design',p:.20},{l:'Design Development',p:.25},{l:'Construction Documents + BOQ',p:.20},{l:'Tender Support + Site Supervision',p:.10}];
+const RATIO_A=[{l:'Appraisal and Briefing',p:.15},{l:'Feasibility & Preliminary Concept',p:.20},{l:'Final Concept + Lighting (Optional)',p:.30},{l:'Schematic Design',p:.35}];
+const RATIO_B=[{l:'Appraisal and Briefing',p:.15},{l:'Feasibility & Preliminary Concept',p:.20},{l:'Final Concept',p:.20},{l:'Schematic Design',p:.15},{l:'Design Development',p:.10},{l:'Construction Documents',p:.10},{l:'BOQ (Bill of Quantity)',p:.05},{l:'Author Supervision',p:.05}];
+const RATIO_C=[{l:'Appraisal and Briefing',p:.15},{l:'Feasibility & Preliminary Concept',p:.20},{l:'Final Concept + Lighting (Optional)',p:.20},{l:'Schematic Design',p:.15},{l:'Design Development',p:.10},{l:'Construction Documents',p:.10},{l:'BOQ (Bill of Quantity)',p:.05},{l:'Author Supervision',p:.05}];
 const WEEKS_DEFAULT={
-  'Briefing & Mobilization':1,
-  'Concept Design + Lighting (Optional)':4,
-  'Concept Design':4,
-  'Schematic Design':3,
+  'Appraisal and Briefing':1,
+  'Feasibility & Preliminary Concept':2,
+  'Final Concept + Lighting (Optional)':4,
+  'Final Concept':4,
+  'Schematic Design':4,
   'Design Development':4,
-  'Construction Documents + BOQ':4,
-  'Tender Support + Site Supervision':3,
+  'Construction Documents':6,
+  'BOQ (Bill of Quantity)':3,
+  'Author Supervision':4,
 };
 
 // ─── DOCUMENT ISSUE SCHEDULE (editable weeks) ─────────────────────
@@ -1624,7 +1806,7 @@ function buildSummary(){
       <tr><td class="label">Interior + Lighting</td><td class="value" style="color:var(--terra-dk);font-weight:600">${fmt(fee)}</td></tr>
       <tr><td class="label">Add-ons</td><td class="value">${(sel.Brand||sel.Signage||sel.AV)?fmt(adds):'Không chọn'}</td></tr>
       <tr><td class="label">Grand Total</td><td class="value highlight">${fmt(fee+adds)}</td></tr>
-      <tr><td class="label">Số slides PPTX</td><td class="value">18 slides</td></tr>
+      <tr><td class="label">Số slides PPTX</td><td class="value">29 slides</td></tr>
     </table>`;
 }
 
@@ -1755,6 +1937,114 @@ async function generate(){
     alert('Lỗi: '+e.message);
     btn.textContent='⬇ Generate & Tải PPTX';
     btn.classList.remove('busy');
+  }
+}
+
+// ─── AI IMAGE PROMPT GENERATOR ────────────────────────────────────
+function buildImagePrompts() {
+  const g = id => document.getElementById(id)?.value || '';
+  const typology = g('aiTypo') || g('typology') || 'Hotel & Resort';
+  const projectName = g('projectName') || 'this project';
+  const location = g('location') || 'Vietnam';
+  const moodDirection = g('aiSpecial') || g('aiDescription') || '';
+  const tagline = aiDesignData?.designTagline || '';
+
+  const pillars = [
+    { label: g('p1label') || 'WELCOME', sub: g('p1sub') || 'Arrival ritual, the human touch' },
+    { label: g('p2label') || 'F&B', sub: g('p2sub') || 'Refined, sensory, unhurried' },
+    { label: g('p3label') || 'SOCIAL', sub: g('p3sub') || 'Warm, atmospheric, connected' },
+  ];
+
+  const styleLine = `Interior design photography for a ${typology} project${projectName ? ` called "${projectName}"` : ''} in ${location}.` +
+    (tagline ? ` Overall design direction: "${tagline}".` : '') +
+    (moodDirection ? ` Additional mood direction: ${moodDirection}.` : '') +
+    ' Photorealistic, professional architectural interior photography, natural and ambient lighting, no visible people, no text or watermarks, no brand logos.';
+
+  return [
+    {
+      key: 'hero',
+      title: 'Ảnh Hero (trang bìa)',
+      ratio: '≈ 2.2 : 1 — wide horizontal banner',
+      prompt: `${styleLine} A wide establishing shot of the main space, showing the full room composition, materials and lighting mood that define this project. Horizontal wide-banner composition, aspect ratio approximately 2.2:1 (ultra-wide landscape, roughly 2200×1000px or similar).`,
+    },
+    {
+      key: 'mood1',
+      title: `Mood Image 1 — Pillar "${pillars[0].label}"`,
+      ratio: '4 : 5 — portrait',
+      prompt: `${styleLine} Focus specifically on the "${pillars[0].label}" moment: ${pillars[0].sub}. Show a close, atmospheric detail or vignette that captures this feeling within the space. Vertical portrait composition, aspect ratio 4:5 (roughly 1600×2000px or similar).`,
+    },
+    {
+      key: 'mood2',
+      title: `Mood Image 2 — Pillar "${pillars[1].label}"`,
+      ratio: '4 : 5 — portrait',
+      prompt: `${styleLine} Focus specifically on the "${pillars[1].label}" moment: ${pillars[1].sub}. Show a close, atmospheric detail or vignette that captures this feeling within the space. Vertical portrait composition, aspect ratio 4:5 (roughly 1600×2000px or similar).`,
+    },
+    {
+      key: 'mood3',
+      title: `Mood Image 3 — Pillar "${pillars[2].label}"`,
+      ratio: '4 : 5 — portrait',
+      prompt: `${styleLine} Focus specifically on the "${pillars[2].label}" moment: ${pillars[2].sub}. Show a close, atmospheric detail or vignette that captures this feeling within the space. Vertical portrait composition, aspect ratio 4:5 (roughly 1600×2000px or similar).`,
+    },
+    {
+      key: 'closing',
+      title: 'Ảnh Closing (trang cảm ơn)',
+      ratio: '3 : 5 — tall portrait',
+      prompt: `${styleLine} A tall, editorial-style vertical shot of a signature corner or feature of the space — the kind of image that closes a presentation on a strong visual note. Tall vertical portrait composition, aspect ratio approximately 3:5 (roughly 1200×2000px or similar), designed to fill the full height of a page edge-to-edge.`,
+    },
+  ];
+}
+
+function openPromptModal() {
+  const prompts = buildImagePrompts();
+  const body = document.getElementById('promptModalBody');
+  body.innerHTML = prompts.map((p, i) => `
+    <div class="prompt-card">
+      <div class="prompt-card-head">
+        <span class="prompt-card-title">${p.title}</span>
+        <span class="prompt-card-ratio">${p.ratio}</span>
+      </div>
+      <textarea id="promptText${i}" readonly rows="5">${p.prompt}</textarea>
+      <button class="prompt-copy-btn" id="promptCopyBtn${i}" onclick="copyPrompt(${i})">Copy prompt</button>
+    </div>
+  `).join('') + `
+    <p class="prompt-modal-footnote">
+      💡 Dán nguyên văn prompt vào ChatGPT (hoặc công cụ tạo ảnh khác) — model sẽ tự hiểu tỷ lệ khung ảnh yêu cầu trong câu lệnh. Ảnh AI tạo ra là ảnh minh hoạ tham khảo hướng mood, nên thay bằng ảnh render/nhiếp ảnh thật của dự án khi gửi bản chính thức cho khách hàng.
+    </p>`;
+  document.getElementById('promptModalOverlay').classList.add('open');
+}
+
+function closePromptModal() {
+  document.getElementById('promptModalOverlay').classList.remove('open');
+}
+
+function copyPrompt(i) {
+  const ta = document.getElementById('promptText' + i);
+  const btn = document.getElementById('promptCopyBtn' + i);
+  const original = btn.textContent;
+  const showCopied = () => {
+    btn.textContent = '✓ Đã copy';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1600);
+  };
+  const showFailed = () => {
+    btn.textContent = '⚠ Bấm Ctrl+C';
+    setTimeout(() => { btn.textContent = original; }, 2000);
+  };
+  const legacyCopy = () => {
+    ta.removeAttribute('readonly');
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    ta.setAttribute('readonly', 'true');
+    if (ok) showCopied(); else showFailed();
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+    navigator.clipboard.writeText(ta.value).then(showCopied).catch(legacyCopy);
+  } else {
+    legacyCopy();
   }
 }
 
