@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H2X Studio — Quản lý quyền truy cập</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDhwiBhbfTyZvwrOBs0v_ti5WWBuK_hptM",
+    authDomain: "h2x-tools-auth.firebaseapp.com",
+    projectId: "h2x-tools-auth",
+    storageBucket: "h2x-tools-auth.firebasestorage.app",
+    messagingSenderId: "1079247279851",
+    appId: "1:1079247279851:web:1fb2d75e559b0c8e9c90ae",
+  };
+  firebase.initializeApp(firebaseConfig);
+</script>
+<style>
+:root {
+  --black:#141414; --offwhite:#F9F9F7; --cream:#F2F0ED; --white:#FFFFFF;
+  --terra:#C7A07F; --terra-dk:#B8895F;
+  --gray:#999; --border:#E0DDD8; --dark:#1A1814;
+  --red:#C0392B; --green:#1a7a3a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--offwhite);color:var(--black);min-height:100vh}
+header{background:var(--dark);padding:16px 36px;display:flex;align-items:center;gap:14px}
+.logo-h2x{font-family:'Playfair Display',serif;color:#fff;font-size:20px;letter-spacing:1px}
+.logo-studio{font-size:9px;color:var(--terra);letter-spacing:2px}
+.header-title{font-size:12px;color:var(--terra);margin-left:6px}
+.header-signout{margin-left:auto;font-size:12px;color:#aaa;cursor:pointer;text-decoration:underline}
+
+#authGate{position:fixed;inset:0;background:var(--dark);z-index:500;display:flex;align-items:center;justify-content:center}
+#authGate.hidden{display:none}
+.auth-card{background:#fff;border-radius:10px;padding:44px 40px;max-width:400px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.auth-logo{font-family:'Playfair Display',serif;font-size:26px;color:var(--black)}
+.auth-logo-sub{font-size:10px;letter-spacing:3px;color:var(--terra);margin-bottom:22px}
+.auth-title{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:8px}
+.auth-sub{font-size:12px;color:var(--gray);margin-bottom:24px;line-height:1.6}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:14px;font-weight:500;color:#3c4043;cursor:pointer}
+.btn-google:hover{background:#f8f8f8}
+.btn-google svg{width:18px;height:18px}
+.auth-status{margin-top:16px;font-size:12px;color:var(--gray)}
+.auth-status.error{color:var(--red)}
+
+#appContent{display:none;max-width:960px;margin:0 auto;padding:32px 24px}
+#appContent.ready{display:block}
+h1{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:4px}
+.sub{font-size:13px;color:var(--gray);margin-bottom:28px}
+
+.card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:22px;margin-bottom:24px}
+.card h2{font-family:'Playfair Display',serif;font-size:16px;margin-bottom:14px;font-weight:400}
+.frow{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
+.field{flex:1;min-width:200px}
+.field label{display:block;font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.field input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:'Inter',sans-serif;outline:none}
+.field input:focus{border-color:var(--terra)}
+.tool-list{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.tool-chk{display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer}
+.tool-chk input{width:auto;cursor:pointer}
+.btn{padding:10px 20px;border-radius:5px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.btn-primary{background:var(--terra);color:#fff}
+.btn-primary:hover{background:var(--terra-dk)}
+.btn-danger{background:#fff;color:var(--red);border:1px solid #e8c8c4}
+.btn-danger:hover{background:#fdf3f2}
+.form-status{font-size:12px;margin-top:10px;min-height:16px}
+.form-status.ok{color:var(--green)}
+.form-status.error{color:var(--red)}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);padding:8px 10px;border-bottom:1.5px solid var(--black)}
+td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:var(--offwhite)}
+.tool-tag{display:inline-block;background:var(--cream);color:var(--terra-dk);font-size:10.5px;padding:2px 8px;border-radius:10px;margin:2px 3px 2px 0}
+.row-actions{display:flex;gap:8px}
+.row-actions button{font-size:11px;padding:5px 10px;border-radius:4px;border:1px solid var(--border);background:#fff;cursor:pointer}
+.row-actions button:hover{border-color:var(--terra);color:var(--terra-dk)}
+.row-actions button.del:hover{border-color:var(--red);color:var(--red)}
+.empty-note{font-size:12px;color:var(--gray);padding:20px;text-align:center}
+.loading-note{font-size:12px;color:var(--gray);padding:14px 0}
+</style>
+</head>
+<body>
+
+<div id="authGate">
+  <div class="auth-card">
+    <div class="auth-logo">H2X</div>
+    <div class="auth-logo-sub">STUDIO</div>
+    <div class="auth-title" id="authTitle">Trang quản trị</div>
+    <div class="auth-sub" id="authSub">Chỉ dành cho quản trị viên H2X — đăng nhập để quản lý quyền truy cập các tool</div>
+    <button class="btn-google" id="btnGoogleSignIn" onclick="signInWithGoogle()">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Đăng nhập bằng Google
+    </button>
+    <div class="auth-status" id="authStatus"></div>
+  </div>
+</div>
+
+<div id="appContent">
+  <header style="margin:-32px -24px 28px;">
+    <span class="logo-h2x">H2X</span>
+    <span class="logo-studio">STUDIO</span>
+    <span class="header-title">Quản lý quyền truy cập</span>
+    <span class="header-signout" onclick="signOutUser()">Đăng xuất</span>
+  </header>
+
+  <h1>Quản lý quyền truy cập</h1>
+  <div class="sub">Thêm / xoá email được phép dùng các tool nội bộ H2X</div>
+
+  <div class="card">
+    <h2>Thêm hoặc cập nhật quyền</h2>
+    <div class="frow">
+      <div class="field" style="flex:2">
+        <label>Email</label>
+        <input type="email" id="fEmail" placeholder="ten@h2xstudio.com"/>
+      </div>
+      <div class="field">
+        <label>Tên (không bắt buộc)</label>
+        <input type="text" id="fName" placeholder="Tên hiển thị"/>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <label>Tool được phép dùng</label>
+      <div class="tool-list" id="toolList"></div>
+    </div>
+    <button class="btn btn-primary" onclick="saveUser()">Lưu quyền</button>
+    <div class="form-status" id="formStatus"></div>
+  </div>
+
+  <div class="card">
+    <h2>Danh sách hiện tại</h2>
+    <div id="usersTableWrap"><div class="loading-note">Đang tải danh sách...</div></div>
+  </div>
+</div>
+
+<script>
+// Danh sách tool hiện có — thêm tool mới vào đây khi H2X có thêm công cụ HTML khác
+const AVAILABLE_TOOLS = [
+  { id: 'fee-generator', label: 'Fee Proposal Generator' },
+];
+// Email quản trị viên — phải khớp với danh sách trong Firestore Rules
+const ADMIN_EMAILS = ['huy.le@h2xstudio.com', 'giahuymichael@gmail.com'];
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+let currentUser = null;
+let editingEmail = null; // email đang sửa (null = đang thêm mới)
+
+function renderToolChecklist() {
+  document.getElementById('toolList').innerHTML = AVAILABLE_TOOLS.map(t => `
+    <label class="tool-chk">
+      <input type="checkbox" value="${t.id}" class="tool-cb"/>
+      ${t.label}
+    </label>
+  `).join('');
+}
+
+function setAuthStatus(msg, isError) {
+  const el = document.getElementById('authStatus');
+  el.textContent = msg;
+  el.className = 'auth-status' + (isError ? ' error' : '');
+}
+
+function signInWithGoogle() {
+  setAuthStatus('Đang mở cửa sổ đăng nhập...');
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(err => setAuthStatus('Đăng nhập thất bại: ' + err.message, true));
+}
+function signOutUser() { auth.signOut(); }
+
+function showAuthGate() {
+  document.getElementById('authGate').classList.remove('hidden');
+  document.getElementById('appContent').classList.remove('ready');
+}
+function showApp() {
+  document.getElementById('authGate').classList.add('hidden');
+  document.getElementById('appContent').classList.add('ready');
+  loadUsers();
+}
+function showAccessDenied(email) {
+  document.getElementById('authTitle').textContent = 'Không có quyền quản trị';
+  document.getElementById('authSub').textContent = `Tài khoản ${email} không phải quản trị viên.`;
+  document.getElementById('btnGoogleSignIn').style.display = 'none';
+  setAuthStatus('');
+  showAuthGate();
+}
+
+auth.onAuthStateChanged(user => {
+  if (!user) { currentUser = null; showAuthGate(); return; }
+  currentUser = user;
+  if (ADMIN_EMAILS.includes(user.email)) {
+    showApp();
+  } else {
+    showAccessDenied(user.email);
+  }
+});
+
+async function loadUsers() {
+  const wrap = document.getElementById('usersTableWrap');
+  wrap.innerHTML = '<div class="loading-note">Đang tải danh sách...</div>';
+  try {
+    const snap = await db.collection('users').get();
+    if (snap.empty) { wrap.innerHTML = '<div class="empty-note">Chưa có ai trong danh sách.</div>'; return; }
+    const rows = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      const tools = Array.isArray(d.tools) ? d.tools : [];
+      const toolLabels = tools.map(id => {
+        const t = AVAILABLE_TOOLS.find(x => x.id === id);
+        return `<span class="tool-tag">${t ? t.label : id}</span>`;
+      }).join('') || '<span style="color:var(--gray);font-size:12px">— chưa có quyền nào —</span>';
+      rows.push(`
+        <tr>
+          <td>${doc.id}${d.name ? `<br><span style="color:var(--gray);font-size:11.5px">${d.name}</span>` : ''}</td>
+          <td>${toolLabels}</td>
+          <td>
+            <div class="row-actions">
+              <button onclick="editUser('${doc.id.replace(/'/g,"\\'")}')">Sửa</button>
+              <button class="del" onclick="deleteUser('${doc.id.replace(/'/g,"\\'")}')">Xoá</button>
+            </div>
+          </td>
+        </tr>`);
+    });
+    wrap.innerHTML = `<table><thead><tr><th>Email</th><th>Quyền dùng tool</th><th></th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
+  } catch (e) {
+    wrap.innerHTML = `<div class="empty-note" style="color:var(--red)">Lỗi tải danh sách: ${e.message}</div>`;
+  }
+}
+
+async function editUser(email) {
+  editingEmail = email;
+  document.getElementById('fEmail').value = email;
+  document.getElementById('fEmail').disabled = true;
+  const doc = await db.collection('users').doc(email).get();
+  const d = doc.exists ? doc.data() : {};
+  document.getElementById('fName').value = d.name || '';
+  const tools = Array.isArray(d.tools) ? d.tools : [];
+  document.querySelectorAll('.tool-cb').forEach(cb => { cb.checked = tools.includes(cb.value); });
+  document.getElementById('formStatus').textContent = `Đang sửa quyền cho ${email}`;
+  document.getElementById('formStatus').className = 'form-status';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetForm() {
+  editingEmail = null;
+  document.getElementById('fEmail').value = '';
+  document.getElementById('fEmail').disabled = false;
+  document.getElementById('fName').value = '';
+  document.querySelectorAll('.tool-cb').forEach(cb => cb.checked = false);
+}
+
+async function saveUser() {
+  const email = document.getElementById('fEmail').value.trim().toLowerCase();
+  const name = document.getElementById('fName').value.trim();
+  const tools = Array.from(document.querySelectorAll('.tool-cb:checked')).map(cb => cb.value);
+  const status = document.getElementById('formStatus');
+
+  if (!email || !email.includes('@')) { status.textContent = 'Nhập email hợp lệ.'; status.className = 'form-status error'; return; }
+
+  try {
+    await db.collection('users').doc(email).set({ name, tools }, { merge: true });
+    status.textContent = `✓ Đã lưu quyền cho ${email}`;
+    status.className = 'form-status ok';
+    resetForm();
+    loadUsers();
+  } catch (e) {
+    status.textContent = 'Lỗi lưu: ' + e.message;
+    status.className = 'form-status error';
+  }
+}
+
+async function deleteUser(email) {
+  if (!confirm(`Xoá hoàn toàn quyền truy cập của ${email}? Họ sẽ mất quyền dùng mọi tool ngay lập tức.`)) return;
+  try {
+    await db.collection('users').doc(email).delete();
+    loadUsers();
+  } catch (e) {
+    alert('Lỗi xoá: ' + e.message);
+  }
+}
+
+renderToolChecklist();
+</script>
+</body>
+</html>
