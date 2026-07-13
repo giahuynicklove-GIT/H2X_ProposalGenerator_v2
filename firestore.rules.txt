@@ -1,0 +1,12 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userEmail} {
+      // Admin (bạn) đọc/ghi được toàn bộ danh sách qua trang admin.html
+      // Người dùng thường chỉ đọc được đúng hồ sơ của chính mình, không ghi được gì
+      allow read, write: if request.auth != null &&
+        request.auth.token.email in ['huy.le@h2xstudio.com', 'giahuymichael@gmail.com'];
+      allow read: if request.auth != null && request.auth.token.email == userEmail;
+    }
+  }
+}
