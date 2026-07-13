@@ -1,11 +1,50 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
+const jwksClient = require('jwks-rsa');
 const { generateProposal } = require('./generatePptx');
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ─── FIREBASE AUTH VERIFICATION (no service account needed — verifies ─
+// ─── the ID token's signature against Google's public keys) ──────────
+const FIREBASE_PROJECT_ID = 'h2x-tools-auth';
+const client = jwksClient({
+  jwksUri: 'https://www.googleapis.com/service_accounts/v1/metadata/x509/securetoken@system.gserviceaccount.com',
+});
+
+function getSigningKey(header, callback) {
+  client.getSigningKey(header.kid, (err, key) => {
+    if (err) return callback(err);
+    callback(null, key.publicKey || key.rsaPublicKey);
+  });
+}
+
+// Verifies the request is from a genuinely signed-in Firebase user of this
+// project. Does NOT check per-tool Firestore permission (that's enforced
+// client-side by Firestore Security Rules) — this middleware only blocks
+// fully anonymous/direct API abuse from outside the app.
+function requireAuth(req, res, next) {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) {
+    return res.status(401).json({ error: 'Chưa đăng nhập. Vui lòng tải lại trang và đăng nhập bằng Google.' });
+  }
+  jwt.verify(token, getSigningKey, {
+    algorithms: ['RS256'],
+    audience: FIREBASE_PROJECT_ID,
+    issuer: `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`,
+  }, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng tải lại trang.' });
+    }
+    req.userEmail = decoded.email;
+    next();
+  });
+}
 
 // ─── TYPOLOGY ZONE TEMPLATES ─────────────────────────────────────
 const ZONE_TEMPLATES = {
@@ -147,7 +186,7 @@ const TYPOLOGY_CONTEXT = {
 };
 
 // ─── AI RESEARCH ENDPOINT ────────────────────────────────────────
-app.post('/api/research', async (req, res) => {
+app.post('/api/research', requireAuth, async (req, res) => {
   const { area, typology, mood, location, projectName, description, userApiKey } = req.body;
 
   const apiKey = (userApiKey && userApiKey.trim()) || process.env.ANTHROPIC_API_KEY;
@@ -287,7 +326,7 @@ Return ONLY this JSON (no markdown, no backticks, no text before/after):
 });
 
 // ─── GENERATE PPTX ENDPOINT ──────────────────────────────────────
-app.post('/api/generate', async (req, res) => {
+app.post('/api/generate', requireAuth, async (req, res) => {
   try {
     const data = req.body;
     console.log('Generating proposal for:', data.projectName);

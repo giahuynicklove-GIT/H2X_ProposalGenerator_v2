@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Mỗi người chỉ được ĐỌC đúng hồ sơ của email mình (không đọc được người khác)
+    // Không ai được TỰ SỬA quyền của mình qua app — chỉ sửa được qua Firebase Console
+    match /users/{userEmail} {
+      allow read: if request.auth != null && request.auth.token.email == userEmail;
+      allow write: if false;
+    }
+  }
+}
