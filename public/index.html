@@ -26,6 +26,8 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
 
 /* AI PROMPT BUTTON + MODAL */
 .btn-ai-prompt{margin-left:auto;background:var(--terra);color:#fff;border:none;padding:9px 16px;border-radius:5px;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer}
+.btn-ai-prompt+.btn-ai-prompt{margin-left:10px}
+.btn-ai-prompt.has-key{background:#4a7c4a}
 .btn-ai-prompt:hover{background:var(--terra-dk)}
 .prompt-modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,20,.65);z-index:200;align-items:center;justify-content:center;padding:24px}
 .prompt-modal-overlay.open{display:flex}
@@ -229,6 +231,7 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
     <span class="logo-studio">STUDIO</span>
   </div>
   <div class="header-sub">Fee Proposal Generator</div>
+  <button class="btn-ai-prompt" id="btnApiKey" onclick="openApiKeyModal()">🔑 API Key</button>
   <button class="btn-ai-prompt" onclick="openPromptModal()">🎨 Prompt ảnh AI</button>
 </header>
 
@@ -243,6 +246,36 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
       <button class="prompt-modal-close" onclick="closePromptModal()">✕</button>
     </div>
     <div class="prompt-modal-body" id="promptModalBody"></div>
+  </div>
+</div>
+
+<!-- API KEY MODAL -->
+<div class="prompt-modal-overlay" id="apiKeyModalOverlay" onclick="if(event.target===this) closeApiKeyModal()">
+  <div class="prompt-modal" style="max-width:520px">
+    <div class="prompt-modal-head">
+      <div>
+        <h2>API Key của bạn</h2>
+        <div class="sub">Dùng cho tính năng AI đề xuất Zoning & Design Language</div>
+      </div>
+      <button class="prompt-modal-close" onclick="closeApiKeyModal()">✕</button>
+    </div>
+    <div class="prompt-modal-body">
+      <p style="font-size:12px;color:var(--gray);line-height:1.7;margin-bottom:14px">
+        Mặc định, tính năng AI dùng API key chung của studio. Nếu bạn muốn dùng key riêng của mình (ví dụ studio chưa cấu hình key, hoặc bạn muốn tiền trừ vào tài khoản riêng), nhập key Anthropic của bạn vào đây — key chỉ lưu trên trình duyệt của bạn, <strong>không gửi lên hay lưu trên server</strong>, chỉ dùng đúng lúc gọi AI rồi thôi.
+      </p>
+      <div class="field">
+        <label>Anthropic API Key (bắt đầu bằng sk-ant-...)</label>
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-xxxxxxxxxxxxxxxxxxxx" style="font-family:monospace;font-size:12px"/>
+      </div>
+      <div id="apiKeyStatus" style="font-size:12px;margin-top:10px;color:var(--gray)"></div>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button class="btn-ai-prompt" style="margin:0;flex:1" onclick="saveApiKey()">Lưu key</button>
+        <button class="btn-ai-prompt" style="margin:0;background:#fff;color:var(--gray);border:1px solid var(--border)" onclick="clearApiKey()">Xóa key</button>
+      </div>
+      <p style="font-size:11px;color:var(--gray);margin-top:14px;line-height:1.6">
+        💡 Chưa có API key? Tạo miễn phí tại <a href="https://console.anthropic.com" target="_blank" style="color:var(--terra)">console.anthropic.com</a> → API Keys → Create Key.
+      </p>
+    </div>
   </div>
 </div>
 
@@ -1685,10 +1718,12 @@ async function runAI(type){
       location: document.getElementById('location')?.value,
       projectName: document.getElementById('projectName')?.value,
       description: document.getElementById('aiDescription')?.value || '',
+      userApiKey: localStorage.getItem('h2x_anthropic_key') || '',
     };
     try{
       const res=await fetch('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       const data=await res.json();
+      if(data.needsApiKey){ alert(data.error); btn.classList.remove('loading'); btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> AI đề xuất Zoning'; return; }
       aiZoneData=data;
       // show result
       const zText=data.zoningProposal?.map(z=>`<strong>${z.zone}</strong>: ${z.area}m² · ${z.seats||'—'} seats — ${z.rationale}`).join('<br><br>')||'Không có dữ liệu';
@@ -1707,10 +1742,12 @@ async function runAI(type){
       mood: document.getElementById('moodDir')?.value,
       location: document.getElementById('location')?.value,
       projectName: document.getElementById('projectName')?.value,
+      userApiKey: localStorage.getItem('h2x_anthropic_key') || '',
     };
     try{
       const res=await fetch('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       const data=await res.json();
+      if(data.needsApiKey){ alert(data.error); btn.classList.remove('loading'); btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> AI đề xuất Design Language'; return; }
       aiDesignData=data;
       const txt=`<strong>Tagline:</strong> ${data.designTagline||'—'}<br><br>`+
         `<strong>Pillar 1:</strong> ${data.designPillar1?.label} — ${data.designPillar1?.sub}<br>`+
@@ -1940,6 +1977,51 @@ async function generate(){
   }
 }
 
+// ─── API KEY MODAL (BYOK — Bring Your Own Key) ────────────────────
+const API_KEY_STORAGE = 'h2x_anthropic_key';
+
+function refreshApiKeyButtonState() {
+  const btn = document.getElementById('btnApiKey');
+  const hasKey = !!localStorage.getItem(API_KEY_STORAGE);
+  if (!btn) return;
+  btn.textContent = hasKey ? '🔑 API Key riêng ✓' : '🔑 API Key';
+  btn.style.background = hasKey ? '#4a7c4a' : '';
+}
+
+function openApiKeyModal() {
+  const existing = localStorage.getItem(API_KEY_STORAGE) || '';
+  document.getElementById('apiKeyInput').value = existing;
+  document.getElementById('apiKeyStatus').textContent = existing
+    ? '✓ Đang dùng key riêng của bạn cho tính năng AI.'
+    : 'Chưa lưu key riêng — đang dùng key mặc định của studio (nếu có).';
+  document.getElementById('apiKeyModalOverlay').classList.add('open');
+}
+
+function closeApiKeyModal() {
+  document.getElementById('apiKeyModalOverlay').classList.remove('open');
+}
+
+function saveApiKey() {
+  const input = document.getElementById('apiKeyInput');
+  const val = input.value.trim();
+  const status = document.getElementById('apiKeyStatus');
+  if (!val) { status.textContent = 'Vui lòng nhập API key trước khi lưu.'; status.style.color = '#b04a4a'; return; }
+  if (!val.startsWith('sk-ant')) { status.textContent = '⚠ Key Anthropic thường bắt đầu bằng "sk-ant-..." — kiểm tra lại key bạn dán vào.'; status.style.color = '#b08a3a'; return; }
+  localStorage.setItem(API_KEY_STORAGE, val);
+  status.textContent = '✓ Đã lưu key vào trình duyệt này. Từ giờ các tính năng AI sẽ dùng key riêng của bạn.';
+  status.style.color = '#4a7c4a';
+  refreshApiKeyButtonState();
+}
+
+function clearApiKey() {
+  localStorage.removeItem(API_KEY_STORAGE);
+  document.getElementById('apiKeyInput').value = '';
+  const status = document.getElementById('apiKeyStatus');
+  status.textContent = 'Đã xóa key riêng — quay lại dùng key mặc định của studio (nếu có).';
+  status.style.color = 'var(--gray)';
+  refreshApiKeyButtonState();
+}
+
 // ─── AI IMAGE PROMPT GENERATOR ────────────────────────────────────
 function buildImagePrompts() {
   const g = id => document.getElementById(id)?.value || '';
@@ -2052,6 +2134,7 @@ function copyPrompt(i) {
 buildZoneTable();
 calcFee();
 buildDocSchedule();
+refreshApiKeyButtonState();
 </script>
 </body>
 </html>
