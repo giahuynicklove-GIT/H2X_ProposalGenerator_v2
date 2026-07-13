@@ -148,11 +148,14 @@ const TYPOLOGY_CONTEXT = {
 
 // ─── AI RESEARCH ENDPOINT ────────────────────────────────────────
 app.post('/api/research', async (req, res) => {
-  const { area, typology, mood, location, projectName, description } = req.body;
+  const { area, typology, mood, location, projectName, description, userApiKey } = req.body;
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = (userApiKey && userApiKey.trim()) || process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
+    return res.status(400).json({
+      error: 'Chưa có API key. Nhập API key của bạn ở góc trên (biểu tượng 🔑) để dùng tính năng AI, hoặc liên hệ quản trị viên để cấu hình key mặc định.',
+      needsApiKey: true,
+    });
   }
 
   // Get correct zones for this typology
