@@ -511,18 +511,18 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
           <div class="field"><label>Địa điểm *</label><input id="location" placeholder="VD: Long Thành International Airport"/></div>
           <div class="field"><label>Loại hình (Typology)</label>
             <select id="typology" onchange="onTypologyChange(this.value)">
-              <option>Hotel & Resort</option>
-              <option>F&B Restaurant</option>
-              <option>Lounge & Club</option>
-              <option>Airport & Transit Lounge</option>
-              <option>Private Banking & VIP Lounge</option>
-              <option>Wellness & Spa</option>
-              <option>Luxury Retail & Showroom</option>
-              <option>Gallery & Event Space</option>
-              <option>Workplace & Experience Center</option>
-              <option>Villa & Mansion</option>
-              <option>Penthouse & Duplex</option>
-              <option>Mixed-use & Lifestyle Development</option>
+              <option value="Hotel & Resort">Hotel & Resort</option>
+              <option value="F&B Restaurant">F&B Restaurant</option>
+              <option value="Lounge & Club">Lounge & Club</option>
+              <option value="Airport & Transit Lounge">Airport & Transit Lounge</option>
+              <option value="Private Banking & VIP Lounge">Private Banking & VIP Lounge</option>
+              <option value="Wellness & Spa">Wellness & Spa</option>
+              <option value="Luxury Retail & Showroom">Luxury Retail & Showroom</option>
+              <option value="Gallery & Event Space">Gallery & Event Space</option>
+              <option value="Workplace & Experience Center">Workplace & Experience Center</option>
+              <option value="Villa & Mansion">Villa & Mansion</option>
+              <option value="Penthouse & Duplex">Penthouse & Duplex</option>
+              <option value="Mixed-use & Lifestyle Development">Mixed-use & Lifestyle Development</option>
             </select>
           </div>
         </div>
@@ -876,7 +876,7 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
         <div class="mode-badge auto">✦ Auto-generate</div>
       </div>
       <div class="sec-body">
-        <div class="team-box">
+        <div class="team-box" id="teamBoxS7">
           <strong>Chief Creative Officer</strong> — Gia Huy (Michael) · M.Architect · 24+ yrs<br>
           <strong>Chief Operating Officer</strong> — Nguyễn Văn Toàn (Karo) · Architect · 20+ yrs<br>
           <strong>Concept Lead</strong> — Nguyễn Mạnh Hùng (Henry) · Spatial concept, narrative & guest journey<br>
@@ -886,6 +886,17 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
           <strong>Lighting Designer</strong> — [Lighting Lead] · Atmosphere, fixture & control strategy<br>
           <strong>Audio Visual Designer</strong> — [AV Lead] · Soundscape, AV & display concept<br>
           <strong>Brand Lead</strong> — [Brand Lead] · Naming, identity & brand guidelines
+        </div>
+        <div class="team-box" id="teamBoxS7vi" style="display:none">
+          <strong>Giám đốc Sáng tạo (CCO)</strong> — Gia Huy (Michael) · Th.S Kiến trúc · 24+ năm kinh nghiệm<br>
+          <strong>Giám đốc Vận hành (COO)</strong> — Nguyễn Văn Toàn (Karo) · Kiến trúc sư · 20+ năm kinh nghiệm<br>
+          <strong>Trưởng nhóm Ý tưởng</strong> — Nguyễn Mạnh Hùng (Henry) · Ý tưởng không gian, câu chuyện thiết kế & hành trình khách<br>
+          <strong>Trưởng phòng FF&E</strong> — Nguyễn Thị Thúy Vy (Vivian) · Nội thất, thiết bị & tuyển chọn vật liệu<br>
+          <strong>Trưởng phòng Kỹ thuật</strong> — Nguyễn Vương Linh (Lucas) · Hồ sơ kỹ thuật & phối hợp đơn vị tư vấn<br>
+          <strong>3D Diễn họa & Quản lý Dự án</strong> — Đỗ Danh Sơn · Hình ảnh render thực tế · tiến độ, rà soát & bàn giao<br>
+          <strong>Thiết kế Chiếu sáng</strong> — [Lighting Lead] · Không khí không gian, thiết bị & chiến lược điều khiển<br>
+          <strong>Thiết kế Nghe nhìn</strong> — [AV Lead] · Âm thanh, tích hợp AV & màn hình<br>
+          <strong>Phụ trách Thương hiệu</strong> — [Brand Lead] · Đặt tên, nhận diện & hướng dẫn thương hiệu
         </div>
       </div>
       <div class="sec-footer">
@@ -1220,9 +1231,9 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
           <div class="addon-card" id="cardBrand" onclick="toggleAddon('Brand')">
             <div class="addon-hd">
               <div class="addon-chk" id="chkBrand"></div>
-              <div><div class="addon-title">Brand Identity & Naming</div><div class="addon-partner">Partner: Ziva</div></div>
+              <div><div class="addon-title" data-en="Brand Identity & Naming" data-vi="Nhận diện thương hiệu & Đặt tên">Brand Identity & Naming</div><div class="addon-partner">Partner: Ziva</div></div>
             </div>
-            <div class="addon-desc">Naming · Logo · Core identity · Brand guidelines (essentials)</div>
+            <div class="addon-desc" data-en="Naming · Logo · Core identity · Brand guidelines (essentials)" data-vi="Đặt tên · Logo · Nhận diện cốt lõi · Hướng dẫn thương hiệu">Naming · Logo · Core identity · Brand guidelines (essentials)</div>
             <div class="addon-fee">
               <label>Phí (USD)</label>
               <input id="feeBrand" type="number" placeholder="19600" onclick="event.stopPropagation()" oninput="calcGrand()"/>
@@ -1231,9 +1242,9 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
           <div class="addon-card" id="cardSignage" onclick="toggleAddon('Signage')">
             <div class="addon-hd">
               <div class="addon-chk" id="chkSignage"></div>
-              <div><div class="addon-title">Signage & Wayfinding</div><div class="addon-partner">Partner: Ziva</div></div>
+              <div><div class="addon-title" data-en="Signage & Wayfinding" data-vi="Biển báo & Chỉ dẫn">Signage & Wayfinding</div><div class="addon-partner">Partner: Ziva</div></div>
             </div>
-            <div class="addon-desc">Bilingual wayfinding strategy · Signage concept · Specification direction</div>
+            <div class="addon-desc" data-en="Bilingual wayfinding strategy · Signage concept · Specification direction" data-vi="Chỉ dẫn song ngữ · Ý tưởng biển báo · Thông số kỹ thuật">Bilingual wayfinding strategy · Signage concept · Specification direction</div>
             <div class="addon-fee">
               <label>Phí (USD)</label>
               <input id="feeSignage" type="number" placeholder="15400" onclick="event.stopPropagation()" oninput="calcGrand()"/>
@@ -1242,9 +1253,9 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
           <div class="addon-card" id="cardAV" onclick="toggleAddon('AV')">
             <div class="addon-hd">
               <div class="addon-chk" id="chkAV"></div>
-              <div><div class="addon-title">Audio-Visual Design</div><div class="addon-partner">Partner: H2X</div></div>
+              <div><div class="addon-title" data-en="Audio-Visual Design" data-vi="Thiết kế nghe nhìn">Audio-Visual Design</div><div class="addon-partner">Partner: H2X</div></div>
             </div>
-            <div class="addon-desc">Signature soundscape · AV & display integration · Zoning of sound by area</div>
+            <div class="addon-desc" data-en="Signature soundscape · AV & display integration · Zoning of sound by area" data-vi="Âm thanh tổng quan · Tích hợp AV · Phân vùng âm thanh">Signature soundscape · AV & display integration · Zoning of sound by area</div>
             <div class="addon-fee">
               <label>Phí (USD)</label>
               <input id="feeAV" type="number" placeholder="12600" onclick="event.stopPropagation()" oninput="calcGrand()"/>
@@ -1333,7 +1344,7 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
         <div class="mode-badge auto">✦ Auto-generate</div>
       </div>
       <div class="sec-body">
-        <div class="team-box" style="line-height:2.2">
+        <div class="team-box" id="tcBoxEN" style="line-height:2.2">
           <strong>Revisions</strong> — First Draft + 1 consolidated review/stage; further rounds by addendum<br>
           <strong>Site visits</strong> — Up to 3 included; additional at cost<br>
           <strong>Reimbursables</strong> — Travel, printing & mock-ups at cost with prior approval<br>
@@ -1341,6 +1352,15 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
           <strong>Validity</strong> — Proposal valid 30 days from date of issue<br>
           <strong>Currency & tax</strong> — All fees in USD, exclusive of VAT<br>
           <strong>Schedule</strong> — Timeline assumes timely Client feedback at each gate
+        </div>
+        <div class="team-box" id="tcBoxVI" style="line-height:2.2;display:none">
+          <strong>Chỉnh sửa</strong> — Bản nháp đầu + 1 lần rà soát tổng hợp/giai đoạn; các vòng tiếp theo tính phụ lục bổ sung<br>
+          <strong>Khảo sát công trình</strong> — Tối đa 3 lần bao gồm trong phí; thêm lần sẽ tính phí phát sinh<br>
+          <strong>Chi phí hoàn trả</strong> — Đi lại, in ấn & mô hình mẫu tính theo thực tế, cần duyệt trước<br>
+          <strong>Sở hữu trí tuệ</strong> — Bản quyền thiết kế chuyển giao sau khi thanh toán đầy đủ<br>
+          <strong>Hiệu lực</strong> — Báo giá có hiệu lực 30 ngày kể từ ngày phát hành<br>
+          <strong>Đơn vị tiền tệ & thuế</strong> — Toàn bộ phí tính bằng USD, chưa bao gồm VAT<br>
+          <strong>Tiến độ</strong> — Timeline giả định Khách hàng phản hồi đúng hạn ở mỗi mốc duyệt
         </div>
       </div>
       <div class="sec-footer">
@@ -1595,10 +1615,134 @@ const ZONE_TEMPLATES = {
   ],
 };
 
+const VI_ZONE_TEMPLATES = {
+  'Hotel & Resort': [
+    {zone:'Sảnh & Đón tiếp', area:'', seats:'', rationale:'Ấn tượng đầu tiên: check-in, concierge, giữ hành lý; định hình phong cách thương hiệu.'},
+    {zone:'Lounge & Ẩm thực Cả ngày', area:'', seats:'', rationale:'Không gian giao lưu cho khách và cư dân; phục vụ từ bữa sáng đến tối.'},
+    {zone:'Nhà hàng / Quầy bar Đặc trưng', area:'', seats:'', rationale:'Điểm đến F&B; thu hút cả khách địa phương lẫn khách lưu trú.'},
+    {zone:'Hồ bơi & Khu Giải trí Ngoài trời', area:'', seats:'', rationale:'Sàn hồ bơi, ghế tắm nắng, quầy bar ngoài trời; tiện ích chủ đạo của resort.'},
+    {zone:'Spa & Phòng Gym', area:'', seats:'', rationale:'Dịch vụ chăm sóc sức khỏe phù hợp định vị khách sạn.'},
+    {zone:'Khu Hội họp & Sự kiện', area:'', seats:'', rationale:'Phòng chức năng linh hoạt cho sự kiện doanh nghiệp và xã hội.'},
+    {zone:'Khu Hậu cần', area:'', seats:'', rationale:'Bếp, giặt là, kỹ thuật, khu vực nhân viên; không lộ diện với khách.'},
+    {zone:'Lưu thông Khách & Sảnh Thang máy', area:'', seats:'', rationale:'Trục lưu thông đứng kết nối khu công cộng với các tầng khách.'},
+  ],
+  'F&B Restaurant': [
+    {zone:'Lối vào & Quầy Lễ tân', area:'', seats:'', rationale:'Ấn tượng đầu tiên: nghi thức đón khách, giữ áo khoác, chào đón, xác nhận đặt bàn.'},
+    {zone:'Phòng Ăn Chính', area:'', seats:'', rationale:'Khu vực doanh thu chính: bàn ăn, lối đi phục vụ theo tiêu chuẩn fine-dining.'},
+    {zone:'Phòng Ăn Riêng (VIP)', area:'', seats:'', rationale:'Đặt chỗ độc quyền, sự kiện doanh nghiệp, thực đơn thử món — cách âm riêng biệt.'},
+    {zone:'Quầy Bar & Lounge Trước Bữa ăn', area:'', seats:'', rationale:'Aperitif trước bữa tối, khách vãng lai tại quầy bar, trải nghiệm thiên về đồ uống.'},
+    {zone:'Hầm rượu / Khu Trưng bày', area:'', seats:'', rationale:'Trưng bày bộ sưu tập rượu, khu vực sommelier, bảo quản kiểm soát nhiệt độ.'},
+    {zone:'Tiện ích (WC / Giữ đồ)', area:'', seats:'', rationale:'Trải nghiệm nhà vệ sinh cao cấp tương xứng chất lượng phòng ăn; dịch vụ giữ đồ.'},
+    {zone:'Hậu cần / Bếp', area:'', seats:'', rationale:'Bếp chuyên nghiệp đầy đủ: khu nóng, lạnh, bánh; khu vực nhân viên; xử lý rác thải.'},
+    {zone:'Hành lang Nhân viên & Phục vụ', area:'', seats:'', rationale:'Luồng phục vụ ẩn — khách không giao cắt với lối đi nhân viên; lối giao hàng.'},
+  ],
+  'Lounge & Club': [
+    {zone:'Lối vào & Đón tiếp', area:'', seats:'', rationale:'Kiểm soát cửa, kiểm tra danh sách khách, trải nghiệm đón khách định hình không khí đêm.'},
+    {zone:'Lounge Chính & Giao lưu', area:'', seats:'', rationale:'Khu vực ngồi chính và năng lượng giao lưu; tầm nhìn tới quầy bar và sân khấu/DJ.'},
+    {zone:'Quầy F&B / Bar', area:'', seats:'', rationale:'Trọng tâm chương trình cocktail; khả năng phục vụ khối lượng lớn.'},
+    {zone:'Khu VIP / Hội viên', area:'', seats:'', rationale:'Chỗ ngồi bán riêng tư, nâng cao, có dịch vụ bottle service riêng.'},
+    {zone:'Khu Biểu diễn / DJ', area:'', seats:'', rationale:'Sân khấu biểu diễn/DJ có hạ tầng âm thanh và ánh sáng.'},
+    {zone:'Tiện ích (WC)', area:'', seats:'', rationale:'Nhà vệ sinh luân chuyển nhanh, thiết kế cho công suất nightlife.'},
+    {zone:'Hậu cần', area:'', seats:'', rationale:'Kho bar, khu nhân viên, phòng an ninh, xử lý tiền mặt.'},
+    {zone:'Khu Hút thuốc / Sân thượng Ngoài trời', area:'', seats:'', rationale:'Không gian giao lưu mở rộng; khu vực doanh thu phụ khi thời tiết cho phép.'},
+  ],
+  'Airport & Transit Lounge': [
+    {zone:'Đón tiếp & Concierge', area:'', seats:'', rationale:'Một điểm kiểm soát ra vào duy nhất, check-in bằng app/nhận diện khuôn mặt, nghi thức chào đón; nhân viên quan sát khu vực đến.'},
+    {zone:'Lounge Chính & Thư giãn', area:'', seats:'', rationale:'Chỗ ngồi đa dạng; tầm nhìn ra sân đỗ/đường băng ở hàng cao cấp; trái tim giao lưu.'},
+    {zone:'F&B / Bar Cao cấp', area:'', seats:'', rationale:'Buffet + bếp trình diễn + quầy bar, gần khu hậu cần để rút ngắn đường phục vụ.'},
+    {zone:'Khu Yên tĩnh & Chăm sóc Sức khỏe', area:'', seats:'', rationale:'Phòng ngủ ngắn & tắm vòi sen, thư giãn; cách âm ở khu vực xa nhất.'},
+    {zone:'Khu Làm việc', area:'', seats:'', rationale:'Bàn làm việc + phòng họp nhỏ, ngăn cách khu giao lưu và khu yên tĩnh.'},
+    {zone:'Tiện ích (WC / Tắm / Cầu nguyện)', area:'', seats:'', rationale:'Bố trí gần cả khu giao lưu và khu yên tĩnh; tiếp cận đầy đủ.'},
+    {zone:'Hậu cần', area:'', seats:'', rationale:'Bếp, sơ chế, kho, nhân viên, rác thải — hành lang phục vụ không giao cắt luồng khách.'},
+    {zone:'Khu Chuẩn bị Lên máy bay / Lối ra', area:'', seats:'', rationale:'Lối ra thuận tiện tới cổng; màn hình thông báo chuyến bay; nhắc nhở chủ động.'},
+  ],
+  'Private Banking & VIP Lounge': [
+    {zone:'Lễ tân & Concierge', area:'', seats:'', rationale:'Đón tiếp kín đáo, theo lịch hẹn; chào đón bởi chuyên viên quan hệ khách hàng.'},
+    {zone:'Lounge Khách hàng Riêng', area:'', seats:'', rationale:'Khu vực chờ/giao lưu thoải mái cho khách giữa các buổi họp.'},
+    {zone:'Phòng Họp / Tư vấn', area:'', seats:'', rationale:'Buổi tư vấn 1:1 và nhóm nhỏ mang tính bảo mật.'},
+    {zone:'Quầy F&B & Giải khát', area:'', seats:'', rationale:'Dịch vụ giải khát cao cấp; điểm nhấn hiếu khách tinh tế.'},
+    {zone:'Phòng Họp Ban Điều hành', area:'', seats:'', rationale:'Thuyết trình quan trọng và các cuộc họp khách hàng/hội đồng quy mô lớn.'},
+    {zone:'Tiện ích (WC / Giữ đồ)', area:'', seats:'', rationale:'Nhà vệ sinh và dịch vụ giữ đồ kín đáo, hoàn thiện cao cấp.'},
+    {zone:'Hậu cần / Hỗ trợ Kho quỹ', area:'', seats:'', rationale:'Không gian hỗ trợ vận hành an toàn, khu nhân viên, xử lý tài liệu.'},
+    {zone:'Lối vào/ra Riêng cho Khách', area:'', seats:'', rationale:'Lối lưu thông riêng tư bảo mật thông tin khách hàng.'},
+  ],
+  'Wellness & Spa': [
+    {zone:'Lễ tân & Nghi thức Đón tiếp', area:'', seats:'', rationale:'Đón tiếp nhẹ nhàng: quầy lễ tân, trà chào mừng, thử áo choàng, tư vấn trước liệu trình.'},
+    {zone:'Phòng Thư giãn', area:'', seats:'', rationale:'Thư giãn trước và sau liệu trình; ghế sưởi, trà thảo mộc, không gian yên tĩnh.'},
+    {zone:'Phòng Trị liệu', area:'', seats:'', rationale:'Phòng trị liệu đơn và đôi; linh hoạt cho massage, chăm sóc da, trị liệu toàn thân.'},
+    {zone:'Khu Ướt (Sauna / Xông hơi / Hồ bơi)', area:'', seats:'', rationale:'Liệu trình thủy trị liệu: sauna, phòng xông hơi, hồ lạnh, hồ vitality hoặc hồ bơi.'},
+    {zone:'Phòng Yoga & Vận động', area:'', seats:'', rationale:'Lớp yoga, Pilates, vận động nhóm và cá nhân; sàn đàn hồi, ánh sáng tự nhiên.'},
+    {zone:'Tiện ích (Thay đồ / Tủ khóa)', area:'', seats:'', rationale:'Phòng thay đồ phân theo giới tính, tủ khóa cao cấp, phòng tắm, khu trang điểm.'},
+    {zone:'Hậu cần / Nhân viên', area:'', seats:'', rationale:'Phòng chuẩn bị của kỹ thuật viên, giặt là, kho sản phẩm, tủ khóa và khu nghỉ nhân viên.'},
+    {zone:'Khu Bán lẻ Sản phẩm & Lối ra', area:'', seats:'', rationale:'Trưng bày bán lẻ sản phẩm spa; giải khát sau liệu trình; trình tự rời đi nhẹ nhàng.'},
+  ],
+  'Luxury Retail & Showroom': [
+    {zone:'Mặt tiền & Trưng bày Lối vào', area:'', seats:'', rationale:'Trưng bày cửa sổ và trình tự lối vào; tuyên ngôn thị giác đầu tiên của thương hiệu.'},
+    {zone:'Sàn Bán hàng Chính', area:'', seats:'', rationale:'Trưng bày sản phẩm chính và khu vực tham quan; hệ thống kệ linh hoạt.'},
+    {zone:'Phòng Mua sắm Riêng VIP', area:'', seats:'', rationale:'Dịch vụ theo lịch hẹn, chăm sóc cao cấp cho khách hàng hàng đầu.'},
+    {zone:'Khu Trưng bày Sản phẩm Nổi bật', area:'', seats:'', rationale:'Trưng bày sản phẩm chủ đạo/theo mùa xoay vòng; ánh sáng mang tính sân khấu.'},
+    {zone:'Phòng Thử đồ / Tư vấn', area:'', seats:'', rationale:'Không gian thử đồ hoặc tư vấn riêng tư với hoàn thiện cao cấp.'},
+    {zone:'Tiện ích (WC / Lounge)', area:'', seats:'', rationale:'Nhà vệ sinh và khu chờ/giải khát dành cho khách hàng.'},
+    {zone:'Hậu cần / Kho hàng', area:'', seats:'', rationale:'Kho lưu trữ hàng hóa, khu nhận hàng, tiện ích nhân viên.'},
+    {zone:'Lối vào Nhân viên & Dịch vụ', area:'', seats:'', rationale:'Lối vào riêng cho nhân viên/giao hàng, không lộ diện từ khu bán hàng.'},
+  ],
+  'Gallery & Event Space': [
+    {zone:'Lối vào & Đón tiếp / Lễ tân', area:'', seats:'', rationale:'Bán vé, hướng dẫn, giữ áo khoác; định hình phong cách giám tuyển trước khi vào phòng trưng bày.'},
+    {zone:'Phòng Trưng bày Chính', area:'', seats:'', rationale:'Không gian trưng bày chính: hệ thống treo linh hoạt, đèn track, trần cao 3.5m+.'},
+    {zone:'Khu Trưng bày Nổi bật', area:'', seats:'', rationale:'Tác phẩm chủ đạo, sắp đặt trải nghiệm, ánh sáng kiểm soát để tạo ấn tượng tối đa.'},
+    {zone:'Lounge Nhà sưu tập / VIP', area:'', seats:'', rationale:'Xem tác phẩm riêng tư, trao đổi mua bán, xây dựng quan hệ với nhà sưu tập.'},
+    {zone:'Sảnh Sự kiện Đa năng', area:'', seats:'', rationale:'Không gian linh hoạt cho khai mạc, tọa đàm, sự kiện riêng; trang bị AV.'},
+    {zone:'Tiện ích (WC)', area:'', seats:'', rationale:'Nhà vệ sinh kín đáo, hoàn thiện tốt; tiếp cận từ mọi khu trưng bày.'},
+    {zone:'Hậu cần / Kho lưu trữ', area:'', seats:'', rationale:'Kho lưu trữ tác phẩm kiểm soát khí hậu, đóng gói, khu vực kiểm tra tình trạng.'},
+    {zone:'Khu Bốc dỡ & Xử lý', area:'', seats:'', rationale:'Bến bốc dỡ an toàn, thang máy chở hàng, đăng ký và nhận tác phẩm.'},
+  ],
+  'Workplace & Experience Center': [
+    {zone:'Lễ tân & Đón tiếp Thương hiệu', area:'', seats:'', rationale:'Check-in khách và ấn tượng thương hiệu đầu tiên; thường có yếu tố trưng bày.'},
+    {zone:'Không gian Làm việc Mở / Cộng tác', area:'', seats:'', rationale:'Bàn làm việc linh hoạt và khu cộng tác cho công việc hàng ngày.'},
+    {zone:'Khu Trải nghiệm / Trưng bày', area:'', seats:'', rationale:'Khu kể chuyện sản phẩm hoặc thương hiệu cho khách hàng và khách tham quan.'},
+    {zone:'Phòng Họp & Hội nghị', area:'', seats:'', rationale:'Đa dạng kích thước phòng cho họp nội bộ và khách hàng.'},
+    {zone:'Khu Nghỉ giải lao & Café', area:'', seats:'', rationale:'Không gian tụ họp không chính thức và giải khát cho nhân viên, khách.'},
+    {zone:'Tiện ích (WC / Phòng Chăm sóc Sức khỏe)', area:'', seats:'', rationale:'Nhà vệ sinh cộng thêm phòng yên tĩnh/chăm sóc sức khỏe khi cần.'},
+    {zone:'Hậu cần / IT & Kho', area:'', seats:'', rationale:'Phòng server/IT, kho tổng, hỗ trợ vận hành.'},
+    {zone:'Lưu thông Nhân viên', area:'', seats:'', rationale:'Hành lang nội bộ và trục lưu thông đứng cho di chuyển hàng ngày của nhân viên.'},
+  ],
+  'Villa & Mansion': [
+    {zone:'Sảnh Vào & Đón tiếp', area:'', seats:'', rationale:'Trình tự đón tiếp trang trọng; định hình phong cách cho toàn bộ dinh thự.'},
+    {zone:'Phòng Khách & Sinh hoạt Gia đình', area:'', seats:'', rationale:'Không gian sum họp gia đình chính; trái tim giao lưu của ngôi nhà.'},
+    {zone:'Phòng Ăn & Bếp', area:'', seats:'', rationale:'Ăn uống trang trọng và hàng ngày, kết nối với bếp cao cấp.'},
+    {zone:'Phòng Ngủ Chủ', area:'', seats:'', rationale:'Không gian riêng tư của chủ nhà: phòng ngủ, tủ đồ walk-in, phòng tắm riêng.'},
+    {zone:'Phòng Ngủ Khách', area:'', seats:'', rationale:'Phòng ngủ bổ sung cho gia đình hoặc khách, có phòng tắm riêng.'},
+    {zone:'Ngoài trời / Sân vườn & Hồ bơi', area:'', seats:'', rationale:'Không gian sinh hoạt ngoài trời, sàn hồ bơi và khu vườn cảnh quan.'},
+    {zone:'Hậu cần / Khu Nhân viên', area:'', seats:'', rationale:'Tiện ích cho người giúp việc, giặt là, và phòng kỹ thuật.'},
+    {zone:'Ga-ra & Lối vào Dịch vụ', area:'', seats:'', rationale:'Kho để xe và lối vào dịch vụ/giao hàng riêng biệt.'},
+  ],
+  'Penthouse & Duplex': [
+    {zone:'Sảnh Vào & Đón tiếp', area:'', seats:'', rationale:'Sảnh thang máy riêng hoặc tiền sảnh; tuyên ngôn đầu tiên của căn hộ.'},
+    {zone:'Tầng Sinh hoạt & Giao lưu', area:'', seats:'', rationale:'Tầng tiếp khách chính, thường tập trung vào tầm nhìn thành phố.'},
+    {zone:'Phòng Ăn & Bếp Mở', area:'', seats:'', rationale:'Ăn uống trang trọng và thường ngày kết nối với bếp trình diễn.'},
+    {zone:'Phòng Ngủ Chủ & Tủ đồ Walk-in', area:'', seats:'', rationale:'Tầng/cánh riêng của chủ nhà có phòng thay đồ và phòng tắm riêng.'},
+    {zone:'Sân thượng Riêng / Sky Lounge', area:'', seats:'', rationale:'Không gian giao lưu ngoài trời đặc trưng chỉ có ở penthouse.'},
+    {zone:'Phòng Ngủ Khách', area:'', seats:'', rationale:'Phòng ngủ khách có phòng tắm riêng, thường ở tầng riêng biệt.'},
+    {zone:'Phòng Làm việc / Phòng Giải trí', area:'', seats:'', rationale:'Không gian làm việc hoặc giải trí/media riêng biệt.'},
+    {zone:'Hậu cần / Kỹ thuật', area:'', seats:'', rationale:'Giặt là, kho, và không gian kỹ thuật/tiện ích.'},
+  ],
+  'Mixed-use & Lifestyle Development': [
+    {zone:'Quảng trường Đón tiếp Chính', area:'', seats:'', rationale:'Trình tự đón tiếp công cộng chung cho toàn bộ khu phát triển.'},
+    {zone:'Mặt tiền Bán lẻ / F&B', area:'', seats:'', rationale:'Các gian thương mại tầng trệt kích hoạt mặt phố.'},
+    {zone:'Sảnh & Concierge', area:'', seats:'', rationale:'Sảnh căn hộ/văn phòng có concierge và xử lý thư từ/bưu kiện.'},
+    {zone:'Tiện ích Chung / Clubhouse', area:'', seats:'', rationale:'Hồ bơi, gym, phòng chức năng dùng chung cho toàn khu.'},
+    {zone:'Không gian Co-working / Cộng đồng', area:'', seats:'', rationale:'Không gian làm việc chung linh hoạt và khu vực sinh hoạt cộng đồng.'},
+    {zone:'Tiện ích (WC / Chăm sóc Sức khỏe)', area:'', seats:'', rationale:'Nhà vệ sinh và tiện ích chăm sóc sức khỏe chung cho cư dân/khách thuê.'},
+    {zone:'Hậu cần / Bốc dỡ', area:'', seats:'', rationale:'Bến bốc dỡ tập trung và lối vào dịch vụ cho toàn bộ khách thuê.'},
+    {zone:'Trục Lưu thông Đứng & Thang máy', area:'', seats:'', rationale:'Sảnh thang máy và cầu thang kết nối tất cả các tầng của khu phát triển.'},
+  ],
+};
+
 let DEFAULT_ZONES = ZONE_TEMPLATES['Hotel & Resort'];
 
 function getZonesForTypology(typology) {
-  return ZONE_TEMPLATES[typology] || ZONE_TEMPLATES['Hotel & Resort'];
+  const src = (window.currentLang === 'vi') ? VI_ZONE_TEMPLATES : ZONE_TEMPLATES;
+  return src[typology] || src['Hotel & Resort'];
 }
 
 // ─── NAV ─────────────────────────────────────────────────────────
@@ -1619,17 +1763,30 @@ function go(n) {
 }
 
 // ─── SCOPE ───────────────────────────────────────────────────────
+function buildScopeInfoHTML(v) {
+  const sl = stageLabel;
+  const L = window.currentLang === 'vi'
+    ? { included:'Bao gồm', includedFull:'Bao gồm (đầy đủ, không Chiếu sáng)', includedFullLight:'Bao gồm (đầy đủ + Chiếu sáng Tùy chọn)', optional:'Tùy chọn thêm', feeRatio:'Tỷ lệ phí', payment:'Thanh toán', lighting:'Chiếu sáng', offeredSeparately:'Chào giá riêng dưới dạng hạng mục bổ sung' }
+    : { included:'Included', includedFull:'Included (full, no Lighting)', includedFullLight:'Included (full + Lighting Optional)', optional:'Optional', feeRatio:'Fee ratio', payment:'Payment', lighting:'Lighting', offeredSeparately:'Offered separately as an add-on' };
+  if (v === 'B') {
+    return `<strong>${L.includedFull}:</strong> ${sl('Appraisal and Briefing')} · ${sl('Feasibility & Preliminary Concept')} · ${sl('Final Concept')} · ${sl('Schematic Design')} · ${sl('Design Development')} · ${sl('Construction Documents')} · ${sl('BOQ (Bill of Quantity)')} · ${sl('Author Supervision')}<br><strong>${L.feeRatio}:</strong> ${sl('Appraisal and Briefing')} 15% · ${sl('Feasibility & Preliminary Concept')} 20% · ${sl('Final Concept')} 20% · ${sl('Schematic Design')} 15% · ${sl('Design Development')} 10% · ${sl('Construction Documents')} 10% · ${sl('BOQ (Bill of Quantity)')} 5% · ${sl('Author Supervision')} 5%<br><strong>${L.payment}:</strong> ${sl('Appraisal and Briefing')} 15% · ${sl('Feasibility & Preliminary Concept')} 20% · ${sl('Final Concept')} 20% · ${sl('Schematic Design')} 15% · ${sl('Design Development')} 10% · ${sl('Construction Documents')} 10% · ${sl('BOQ (Bill of Quantity)')} 5% · ${sl('Author Supervision')} 5%<br><strong>${L.lighting}:</strong> ${L.offeredSeparately}`;
+  }
+  if (v === 'C') {
+    return `<strong>${L.includedFullLight}:</strong> ${sl('Appraisal and Briefing')} · ${sl('Feasibility & Preliminary Concept')} · ${sl('Final Concept + Lighting (Optional)')} · ${sl('Schematic Design')} · ${sl('Design Development')} · ${sl('Construction Documents')} · ${sl('BOQ (Bill of Quantity)')} · ${sl('Author Supervision')}<br><strong>${L.feeRatio}:</strong> ${sl('Appraisal and Briefing')} 15% · ${sl('Feasibility & Preliminary Concept')} 20% · ${sl('Final Concept + Lighting (Optional)')} 20% · ${sl('Schematic Design')} 15% · ${sl('Design Development')} 10% · ${sl('Construction Documents')} 10% · ${sl('BOQ (Bill of Quantity)')} 5% · ${sl('Author Supervision')} 5%<br><strong>${L.payment}:</strong> ${sl('Appraisal and Briefing')} 15% · ${sl('Feasibility & Preliminary Concept')} 20% · ${sl('Final Concept + Lighting (Optional)')} 20% · ${sl('Schematic Design')} 15% · ${sl('Design Development')} 10% · ${sl('Construction Documents')} 10% · ${sl('BOQ (Bill of Quantity)')} 5% · ${sl('Author Supervision')} 5%`;
+  }
+  // 'A' (default)
+  return `<strong>${L.included}:</strong> ${sl('Appraisal and Briefing')} · ${sl('Feasibility & Preliminary Concept')} · ${sl('Final Concept + Lighting (Optional)')} · ${sl('Schematic Design')}<br><strong>${L.optional}:</strong> DD / CD / BOQ · ${sl('Author Supervision')}<br><strong>${L.feeRatio}:</strong> Mobilization 15% · ${sl('Feasibility & Preliminary Concept')} 20% · ${sl('Final Concept + Lighting (Optional)')} 30% · ${sl('Schematic Design')} 35%<br><strong>${L.payment}:</strong> Signing 15% · ${sl('Feasibility & Preliminary Concept')} approval 20% · ${sl('Final Concept + Lighting (Optional)')} approval 30% · ${sl('Schematic Design')} approval 35%`;
+}
+function setScopeInfoOnly(v) {
+  const el = document.getElementById('scopeInfo');
+  if (el) el.innerHTML = buildScopeInfoHTML(v);
+}
 function setScope(v){
   document.getElementById('scope').value=v;
   document.getElementById('scopeA').classList.toggle('active',v==='A');
   document.getElementById('scopeB').classList.toggle('active',v==='B');
   document.getElementById('scopeC').classList.toggle('active',v==='C');
-  const infos = {
-    A: '<strong>Included:</strong> Appraisal and Briefing · Feasibility & Preliminary Concept · Concept + Lighting (Optional) · Schematic<br><strong>Optional:</strong> DD / CD / BOQ · Author Supervision<br><strong>Fee ratio:</strong> Mobilization 15% · Feasibility & Preliminary Concept Design 20% · Final Concept Design 30% · Schematic 35%<br><strong>Payment:</strong> Signing 15% · Feasibility & Preliminary Concept approval 20% · Final Concept approval 30% · Schematic approval 35%',
-    B: '<strong>Included (full, no Lighting):</strong> Appraisal and Briefing · Feasibility & Preliminary Concept · Final Concept · Schematic · Design Development · Construction Documents · BOQ (Bill of Quantity) · Author Supervision<br><strong>Fee ratio:</strong> Appraisal and Briefing 15% · Feasibility & Preliminary Concept 20% · Final Concept 20% · Schematic 15% · Design Development 10% · Construction Documents 10% · BOQ (Bill of Quantity) 5% · Author Supervision 5%<br><strong>Payment:</strong> Appraisal and Briefing 15% · Feasibility & Preliminary Concept 20% · Final Concept 20% · Schematic 15% · Design Development 10% · Construction Documents 10% · BOQ (Bill of Quantity) 5% · Author Supervision 5%<br><strong>Lighting:</strong> Offered separately as an add-on',
-    C: '<strong>Included (full + Lighting Optional):</strong> Appraisal and Briefing · Feasibility & Pre. Concept · Final Concept + Lighting (Optional) · Schematic · Design Development · Construction Documents · BOQ (Bill of Quantity) · Author Supervision<br><strong>Fee ratio:</strong> Appraisal and Briefing 15% · Feasibility & Pre. Concept 20% · Final Concept + Lighting (Optional) 20% · Schematic 15% · Design Development 10% · Construction Documents 10% · BOQ (Bill of Quantity) 5% · Author Supervision 5%<br><strong>Payment:</strong> Appraisal and Briefing 15% · Feasibility & Pre. Concept 20% · Final Concept + Lighting (Optional) 20% · Schematic 15% · Design Development 10% · Construction Documents 10% · BOQ (Bill of Quantity) 5% · Author Supervision 5%',
-  };
-  document.getElementById('scopeInfo').innerHTML=infos[v]||infos.A;
+  setScopeInfoOnly(v);
   calcFee();
   if(typeof buildDocSchedule==='function') buildDocSchedule();
 }
@@ -1659,7 +1816,7 @@ function buildDocSchedule(){
   tbody.innerHTML=rows.map((r,i)=>`
     <tr>
       <td style="text-align:center">${i+1}</td>
-      <td>${r.l}</td>
+      <td>${stageLabel(r.l)}</td>
       <td><input type="number" min="0" step="1" class="doc-weeks-input" data-phase="${r.l.replace(/"/g,'&quot;')}" data-ratio="${Math.round(r.p*100)}" value="${WEEKS_DEFAULT[r.l]||1}" onchange="calcDocTotalWeeks()" style="width:100%;background:transparent;border:none;text-align:center;font-family:'Inter',sans-serif;font-size:12px;color:var(--black)"/></td>
       <td style="text-align:center">${Math.round(r.p*100)}%</td>
     </tr>`).join('');
@@ -1692,7 +1849,7 @@ function calcFee(){
   const rows=scope==='B'?RATIO_B:scope==='C'?RATIO_C:RATIO_A;
   document.getElementById('feeBreakdown').innerHTML=rows.map(r=>`
     <div class="fee-row">
-      <span>${r.l} (${Math.round(r.p*100)}%)</span>
+      <span>${stageLabel(r.l)} (${Math.round(r.p*100)}%)</span>
       <span class="fee-amt">${fmt(Math.round(fee*r.p))}</span>
     </div>`).join('');
   document.getElementById('feeSubtotal').textContent=fmt(fee);
@@ -1732,10 +1889,10 @@ function buildZoneTable(zones){
       <td><input id="zr${i}" value="${z.rationale||''}" style="font-size:11px"/></td>
     </tr>`).join('')+`
     <tr>
-      <td>Total (net usable)</td>
+      <td>${window.currentLang==='vi' ? 'Tổng (diện tích sử dụng thuần)' : 'Total (net usable)'}</td>
       <td id="zTotalCell" style="font-weight:600;color:var(--terra-dk)"></td>
       <td></td>
-      <td style="font-size:11px;color:var(--gray)">Circulation (~15%) distributed within each zone.</td>
+      <td style="font-size:11px;color:var(--gray)">${window.currentLang==='vi' ? 'Diện tích lưu thông (~15%) phân bổ trong từng khu vực.' : 'Circulation (~15%) distributed within each zone.'}</td>
     </tr>`;
   sumArea();
 }
@@ -2337,6 +2494,39 @@ const I18N_VI = {
   'Số slides PPTX': 'Số slide PPTX',
 };
 
+// Tên các giai đoạn thiết kế — bản dịch CHÍNH THỨC theo quy định của H2X.
+// Khóa (key) giữ nguyên tiếng Anh vì được dùng làm định danh (data-phase) gửi lên
+// backend để khớp với getStageDefs() trong generatePptx.js — KHÔNG được đổi khóa.
+const STAGE_VI = {
+  'Appraisal and Briefing': 'Đánh giá và tóm tắt',
+  'Feasibility & Preliminary Concept': 'Tính khả thi và ý tưởng sơ bộ',
+  'Final Concept': 'Thiết kế Ý tưởng',
+  'Final Concept + Lighting (Optional)': 'Thiết kế Ý tưởng + Chiếu sáng (Tùy chọn)',
+  'Schematic Design': 'Thiết kế Cơ sở',
+  'Design Development': 'Thiết kế kĩ thuật',
+  'Construction Documents': 'Thiết kế bản vẽ thi công',
+  'BOQ (Bill of Quantity)': 'Bảng khối lượng',
+  'Author Supervision': 'Giám sát tác giả',
+};
+function stageLabel(l) { return (window.currentLang === 'vi' && STAGE_VI[l]) ? STAGE_VI[l] : l; }
+
+// Tên hiển thị của Typology — value gửi lên server luôn giữ tiếng Anh (dùng làm khóa
+// tra ZONE_TEMPLATES / AI prompt ở server.js), chỉ đổi phần chữ hiển thị trong dropdown.
+const TYPOLOGY_VI = {
+  'Hotel & Resort': 'Khách sạn & Resort',
+  'F&B Restaurant': 'Nhà hàng F&B',
+  'Lounge & Club': 'Lounge & Club',
+  'Airport & Transit Lounge': 'Phòng chờ Sân bay',
+  'Private Banking & VIP Lounge': 'Private Banking & Lounge VIP',
+  'Wellness & Spa': 'Wellness & Spa',
+  'Luxury Retail & Showroom': 'Bán lẻ Cao cấp & Showroom',
+  'Gallery & Event Space': 'Gallery & Không gian Sự kiện',
+  'Workplace & Experience Center': 'Văn phòng & Trung tâm Trải nghiệm',
+  'Villa & Mansion': 'Biệt thự',
+  'Penthouse & Duplex': 'Penthouse & Duplex',
+  'Mixed-use & Lifestyle Development': 'Khu phức hợp Đa chức năng',
+};
+
 // Áp dụng ngôn ngữ: chỉ đổi các chuỗi tĩnh khớp CHÍNH XÁC trong từ điển,
 // nội dung tự do người dùng gõ vào input/textarea không bị ảnh hưởng.
 const _i18nOriginalText = new WeakMap();
@@ -2357,11 +2547,42 @@ function applyLanguage(lang) {
       el.textContent = original;
     }
   });
+
+  // Các cặp block song ngữ ẩn/hiện (team-box có định dạng <strong>/<br> phức tạp)
+  const pairToggle = (enId, viId) => {
+    const enEl = document.getElementById(enId), viEl = document.getElementById(viId);
+    if (!enEl || !viEl) return;
+    enEl.style.display = lang === 'vi' ? 'none' : '';
+    viEl.style.display = lang === 'vi' ? '' : 'none';
+  };
+  pairToggle('teamBoxS7', 'teamBoxS7vi');
+  pairToggle('tcBoxEN', 'tcBoxVI');
+
+  // Phần tử có data-en / data-vi (addon cards)
+  document.querySelectorAll('[data-en][data-vi]').forEach(el => {
+    el.textContent = lang === 'vi' ? el.dataset.vi : el.dataset.en;
+  });
+
+  // Dropdown Typology — value giữ tiếng Anh, chỉ đổi chữ hiển thị
+  document.querySelectorAll('#typology option').forEach(opt => {
+    opt.textContent = (lang === 'vi' && TYPOLOGY_VI[opt.value]) ? TYPOLOGY_VI[opt.value] : opt.value;
+  });
+
   document.documentElement.lang = lang === 'vi' ? 'vi' : 'en';
   window.currentLang = lang;
   localStorage.setItem(LANG_STORAGE, lang);
   const btn = document.getElementById('btnLangToggle');
   if (btn) btn.textContent = lang === 'vi' ? '🌐 English version' : '🌐 Giao diện tiếng Việt';
+
+  // Re-render các bảng/khối được JS build động để áp dụng ngôn ngữ mới
+  if (typeof getZonesForTypology === 'function') {
+    DEFAULT_ZONES = getZonesForTypology(document.getElementById('typology')?.value || 'Hotel & Resort');
+  }
+  if (typeof buildZoneTable === 'function') buildZoneTable(DEFAULT_ZONES);
+  if (typeof buildDocSchedule === 'function') buildDocSchedule();
+  if (typeof calcFee === 'function') calcFee();
+  if (typeof setScope === 'function') { const s = document.getElementById('scope')?.value; if (s) setScopeInfoOnly(s); }
+  if (document.getElementById('summaryTable') && cur === 30 && typeof buildSummary === 'function') buildSummary();
 }
 
 function toggleLanguage() {
