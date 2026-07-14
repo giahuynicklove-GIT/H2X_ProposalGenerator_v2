@@ -281,6 +281,7 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
     <span class="logo-studio">STUDIO</span>
   </div>
   <div class="header-sub">Fee Proposal Generator</div>
+  <button class="btn-ai-prompt" id="btnLangToggle" onclick="toggleLanguage()" style="background:#2A2520;border:1px solid #3A3530">🌐 Giao diện tiếng Việt</button>
   <button class="btn-ai-prompt" id="btnApiKey" onclick="openApiKeyModal()">🔑 API Key</button>
   <a class="btn-ai-prompt" href="/fonts/H2X-Fonts.zip" download style="text-decoration:none;display:inline-flex;align-items:center">⬇ Download Font</a>
   <button class="btn-ai-prompt" onclick="openPromptModal()">🎨 Prompt ảnh AI</button>
@@ -1888,9 +1889,9 @@ function buildSummary(){
       <tr><td class="label">Dự án</td><td class="value">${g('projectName')||'—'}</td></tr>
       <tr><td class="label">Khách hàng</td><td class="value">${g('clientName')||'—'}</td></tr>
       <tr><td class="label">Địa điểm</td><td class="value">${g('location')||'—'}</td></tr>
-      <tr><td class="label">Typology</td><td class="value">${g('typology')||'—'}</td></tr>
+      <tr><td class="label">${window.currentLang==='vi'?'Loại hình':'Typology'}</td><td class="value">${g('typology')||'—'}</td></tr>
       <tr><td class="label">Diện tích</td><td class="value">~${g('area')||'—'} m²</td></tr>
-      <tr><td class="label">Scope</td><td class="value">${({A:'Kịch bản A — Concept → Schematic',B:'Kịch bản B — Full Services (không Lighting)',C:'Kịch bản C — Full Services + Lighting (Optional)'})[g('scope')]||'—'}</td></tr>
+      <tr><td class="label">${window.currentLang==='vi'?'Phạm vi':'Scope'}</td><td class="value">${({A:'Kịch bản A — Concept → Schematic',B:'Kịch bản B — Full Services (không Lighting)',C:'Kịch bản C — Full Services + Lighting (Optional)'})[g('scope')]||'—'}</td></tr>
       <tr><td class="label">Interior + Lighting</td><td class="value" style="color:var(--terra-dk);font-weight:600">${fmt(fee)}</td></tr>
       <tr><td class="label">Add-ons</td><td class="value">${(sel.Brand||sel.Signage||sel.AV)?fmt(adds):'Không chọn'}</td></tr>
       <tr><td class="label">Grand Total</td><td class="value highlight">${fmt(fee+adds)}</td></tr>
@@ -1983,6 +1984,7 @@ async function generate(){
   const g=id=>document.getElementById(id)?.value||'';
 
   const data={
+    language: window.currentLang || 'en',
     projectName:g('projectName'), clientName:g('clientName'),
     location:g('location'), typology:g('typology'), area:g('area'),
     version:g('version')||'01', month:g('month')||'JUNE 2026',
@@ -2257,6 +2259,115 @@ auth.onAuthStateChanged(async (user) => {
   }
 });
 
+// ─── NGÔN NGỮ GIAO DIỆN (EN mặc định / VI khi bật) ─────────────────
+const LANG_STORAGE = 'h2x_ui_lang';
+window.currentLang = localStorage.getItem(LANG_STORAGE) || 'en';
+
+// Từ điển Anh → Việt cho các chuỗi tĩnh của giao diện.
+// Nội dung người dùng tự gõ (tên dự án, mô tả, tagline...) KHÔNG nằm trong danh sách này nên không bị đụng tới.
+const I18N_VI = {
+  // Section titles (sec-title) & nav sidebar
+  'Cover & Project Info': 'Trang bìa & Thông tin dự án',
+  'Project Understanding': 'Hiểu biết Dự án',
+  'Scope of Services': 'Phạm vi Dịch vụ',
+  'Indicative Zoning Programme': 'Chương trình Phân khu (Zoning)',
+  'Design Language': 'Ngôn ngữ Thiết kế',
+  'Lighting Design': 'Thiết kế Chiếu sáng',
+  'Project Team': 'Đội ngũ Dự án',
+  'Design Process & Workflow': 'Quy trình & Cách thức Làm việc',
+  'Work Stage Deliverable': 'Sản phẩm theo Giai đoạn',
+  'Project Organisation Chart': 'Sơ đồ Tổ chức Dự án',
+  'Design Work Phase': 'Các Giai đoạn Thiết kế',
+  'Briefing and Mobilisation': 'Tiếp nhận Yêu cầu & Khởi động',
+  'Feasibility (Pre-Concept Design)': 'Khả thi (Tiền Ý tưởng)',
+  'Concept Design': 'Thiết kế Ý tưởng',
+  'Schematic Design': 'Thiết kế Sơ bộ',
+  'Development Design': 'Thiết kế Phát triển',
+  'Construction Documents': 'Hồ sơ Thi công',
+  'Document Issue Schedule': 'Tiến độ Phát hành Hồ sơ',
+  'Design Fee': 'Phí Thiết kế',
+  'Detailed Design Stage': 'Chi tiết các Giai đoạn Thiết kế',
+  'Detailed SOW List': 'Danh mục Công việc Chi tiết',
+  'Add-on Workstreams': 'Hạng mục Bổ sung',
+  'Add-on Fee Table': 'Bảng Phí Hạng mục Bổ sung',
+  'Payment Schedule': 'Tiến độ Thanh toán',
+  'Inclusions & Exclusions': 'Hạng mục Bao gồm & Không bao gồm',
+  'Terms & Conditions': 'Điều khoản & Điều kiện',
+  'Hourly Rates & Lithography Charges': 'Đơn giá Giờ công & Phí In ấn',
+  'BIM Fee Schedule': 'Bảng Phí BIM',
+  'Thank You / Contact': 'Lời cảm ơn / Liên hệ',
+
+  // Field labels chưa dịch
+  'The Opportunity': 'Cơ hội Dự án',
+  'Target Guest / User': 'Đối tượng Khách hàng',
+  'Why H2X (có thể để mặc định)': 'Vì sao chọn H2X (có thể để mặc định)',
+  'Typology': 'Loại hình',
+  'Peak Guests': 'Số khách Peak',
+  'm²/Guest Benchmark': 'Định mức m²/Khách',
+  'Design Tagline (1 dòng)': 'Câu Slogan Thiết kế (1 dòng)',
+  'Pillar 1 — Label': 'Trụ cột 1 — Nhãn',
+  'Subtitle': 'Phụ đề',
+  'Pillar 2 — Label': 'Trụ cột 2 — Nhãn',
+  'Pillar 3 — Label': 'Trụ cột 3 — Nhãn',
+
+  // Header
+  'Fee Proposal Generator': 'Công cụ Tạo Báo giá',
+
+  // Nút bấm
+  'Tiếp theo →': 'Tiếp theo →',
+  '🔑 API Key': '🔑 API Key',
+  '🎨 Prompt ảnh AI': '🎨 Gợi ý ảnh AI',
+  '⬇ Generate & Tải PPTX': '⬇ Tạo & Tải file PPTX',
+  'Xem lại & Generate →': 'Xem lại & Tạo file →',
+
+  // Bảng zoning
+  'ZONE': 'KHU VỰC',
+  'AREA (m²)': 'DIỆN TÍCH (m²)',
+  'SEATS': 'SỐ CHỖ',
+  'OPERATIONAL RATIONALE': 'LÝ DO VẬN HÀNH',
+  'PHASE': 'GIAI ĐOẠN',
+  'WEEKS': 'SỐ TUẦN',
+  'RATIO': 'TỶ LỆ',
+
+  // Bảng tóm tắt
+  'Scope': 'Phạm vi',
+  'Interior + Lighting': 'Nội thất + Chiếu sáng',
+  'Add-ons': 'Hạng mục bổ sung',
+  'Grand Total': 'Tổng cộng',
+  'Số slides PPTX': 'Số slide PPTX',
+};
+
+// Áp dụng ngôn ngữ: chỉ đổi các chuỗi tĩnh khớp CHÍNH XÁC trong từ điển,
+// nội dung tự do người dùng gõ vào input/textarea không bị ảnh hưởng.
+const _i18nOriginalText = new WeakMap();
+function applyLanguage(lang) {
+  const selector = [
+    '.sec-title', '.nav-item > span:not(.nav-badge)', 'label',
+    '.header-sub', '.fee-box-title', '.summary-tbl .label', '.zone-tbl th',
+    'button:not(#btnLangToggle)', '.btn-gen'
+  ].join(', ');
+  document.querySelectorAll(selector).forEach(el => {
+    if (el.children.length > 0 && el.tagName !== 'BUTTON') return; // bỏ qua thẻ có node con phức tạp
+    if (!_i18nOriginalText.has(el)) _i18nOriginalText.set(el, el.textContent);
+    const original = _i18nOriginalText.get(el);
+    const key = original.trim();
+    if (lang === 'vi' && I18N_VI[key]) {
+      el.textContent = I18N_VI[key];
+    } else {
+      el.textContent = original;
+    }
+  });
+  document.documentElement.lang = lang === 'vi' ? 'vi' : 'en';
+  window.currentLang = lang;
+  localStorage.setItem(LANG_STORAGE, lang);
+  const btn = document.getElementById('btnLangToggle');
+  if (btn) btn.textContent = lang === 'vi' ? '🌐 English version' : '🌐 Giao diện tiếng Việt';
+}
+
+function toggleLanguage() {
+  applyLanguage(window.currentLang === 'vi' ? 'en' : 'vi');
+}
+
 // ─── APP INIT (chỉ chạy sau khi xác thực thành công) ──────────────
 let appInitialized = false;
 function initApp() {
@@ -2266,6 +2377,7 @@ function initApp() {
   calcFee();
   buildDocSchedule();
   refreshApiKeyButtonState();
+  applyLanguage(window.currentLang);
 }
 </script>
 </div>
