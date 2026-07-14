@@ -13,7 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ─── the ID token's signature against Google's public keys) ──────────
 const FIREBASE_PROJECT_ID = 'h2x-tools-auth';
 const client = jwksClient({
-  jwksUri: 'https://www.googleapis.com/service_accounts/v1/metadata/x509/securetoken@system.gserviceaccount.com',
+  jwksUri: 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com',
 });
 
 function getSigningKey(header, callback) {
@@ -39,6 +39,7 @@ function requireAuth(req, res, next) {
     issuer: `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`,
   }, (err, decoded) => {
     if (err) {
+      console.error('Firebase token verification failed:', err.name, err.message);
       return res.status(401).json({ error: 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng tải lại trang.' });
     }
     req.userEmail = decoded.email;
