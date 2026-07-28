@@ -21,6 +21,7 @@ const C = {
   cream:    'F2F0ED',
   terra:    'C7A07F',   // terracotta gold
   terradk:  'B8895F',
+  labeldk:  '8C5A34',   // darker brown for uppercase section labels (readability in PDF export)
   gray:     '999999',
   graylt:   'CCCCCC',
   rule:     'DEDBD5',
@@ -199,12 +200,12 @@ function logo(s, light = false, pos = 'left') {
   s.addImage({ data: H2X_LOGO, x, y: 0.31, w, h });
 }
 
-// Studio name top-right
+// Studio name top-right — vertically centered to align with the logo mark
 function studioName(s, light = false) {
   s.addText('H2X Studio', {
-    x: 8.6663, y: 0.2889, w: 4.0, h: 0.5,
+    x: 8.6663, y: 0.31, w: 4.0, h: 0.434,
     fontSize: SZ.h2, fontFace: F.serif, color: light ? C.white : C.black,
-    align: 'right', margin: 0,
+    align: 'right', valign: 'middle', margin: 0,
   });
 }
 
@@ -221,7 +222,7 @@ function pageNum(s, num) {
 function copyright(s) {
   s.addText(L('©H2X.Studio 2026. All Rights Reserved', '©H2X.Studio 2026. Bảo lưu mọi quyền'), {
     x: ML, y: 7.08, w: 9.0, h: 0.3,
-    fontSize: SZ.copy, fontFace: F.light, color: C.graylt, margin: 0,
+    fontSize: SZ.copy, fontFace: F.bold, color: C.gray, bold: true, margin: 0,
   });
 }
 
@@ -247,11 +248,11 @@ function slideTitle(s, title, subtitle = '') {
   }
 }
 
-// Section label (spaced caps, terracotta)
+// Section label (spaced caps, terracotta) — bold + darker brown for PDF readability
 function secLabel(s, text, x, y, w) {
   s.addText(text, {
     x, y, w, h: 0.3,
-    fontSize: SZ.label, fontFace: F.light, color: C.terra,
+    fontSize: SZ.label, fontFace: F.bold, color: C.labeldk, bold: true,
     charSpacing: 1.5, margin: 0,
   });
 }
@@ -342,7 +343,7 @@ function slide01(pres, d) {
   // Location
   s.addText((d.location || 'ĐỊA ĐIỂM').toUpperCase(), {
     x: ML, y: 5.54, w: CW, h: 0.3,
-    fontSize: SZ.cover, fontFace: F.light, color: C.terra,
+    fontSize: SZ.cover * 0.8, fontFace: F.light, color: C.terra,
     align: 'center', charSpacing: 3, margin: 0,
   });
 
@@ -363,12 +364,12 @@ function slide01(pres, d) {
   // Version / Date
   s.addText(`${L('VERSION', 'PHIÊN BẢN')}  ${d.version || '01'}`, {
     x: ML, y: 5.2, w: 4.0, h: 0.3,
-    fontSize: SZ.coverVer, fontFace: F.light, color: C.gray,
+    fontSize: SZ.coverVer, fontFace: F.bold, color: C.gray, bold: true,
     charSpacing: 2, margin: 0,
   });
   s.addText(d.month || 'JUNE 2026', {
     x: 8.6663, y: 5.2, w: 4.0, h: 0.3,
-    fontSize: SZ.coverVer, fontFace: F.light, color: C.gray,
+    fontSize: SZ.coverVer, fontFace: F.bold, color: C.gray, bold: true,
     align: 'right', charSpacing: 2, margin: 0,
   });
 
@@ -378,7 +379,7 @@ function slide01(pres, d) {
 // ─── SLIDE 02 — PROJECT UNDERSTANDING ───────────────────────────
 function slide02(pres, d) {
   const s = pres.addSlide();
-  slideTitle(s, L('Project Understanding', 'Hiểu biết Dự án'),
+  slideTitle(s, L('Project Understanding', 'Thông tin Dự án'),
     `${d.clientName || '[Client]'} · ${d.typology || '[Typology]'} · ${d.location || '[Location]'}`);
 
   // Left column x=0.6667, w=5.7198
@@ -555,7 +556,7 @@ function slide03(pres, d) {
 // ─── SLIDE 04 — ZONING PROGRAMME ────────────────────────────────
 function slide04(pres, d) {
   const s = pres.addSlide();
-  slideTitle(s, L('Indicative Zoning Programme', 'Chương trình Phân khu (Zoning)'),
+  slideTitle(s, L('Indicative Zoning Programme', 'Phân khu chức năng (Zoning)'),
     `${L('H2X proposes', 'H2X đề xuất')} ~${d.area || '[X]'} m² · ~${d.peakGuests || '[n]'} ${L('peak guests', 'khách peak')} · ~${d.sqmPerGuest || '7'} ${L('m²/guest', 'm²/khách')} · ${L('to be confirmed in Concept', 'sẽ chốt ở giai đoạn Ý tưởng')}`);
 
   const zones = d.zones || [];
@@ -737,7 +738,7 @@ function slide07(pres, d) {
 
   const team = d.team || (CURRENT_LANG === 'vi' ? [
     { role: 'GIÁM ĐỐC SÁNG TẠO (CCO)', name: 'Gia Huy (Michael)', title: 'Th.S Kiến trúc · 24+ năm · định hướng tầm nhìn & thiết kế', dark: true },
-    { role: 'GIÁM ĐỐC VẬN HÀNH (COO)', name: 'Nguyễn Văn Toàn (Karo)', title: 'Kiến trúc sư · 20+ năm · định hướng tầm nhìn & thiết kế', dark: true },
+    { role: 'GIÁM ĐỐC VẬN HÀNH (COO)', name: 'Dương Văn Toàn', title: 'Kiến trúc sư · 20+ năm · định hướng tầm nhìn & thiết kế', dark: true },
     { role: 'TRƯỞNG NHÓM Ý TƯỞNG', name: 'Nguyễn Mạnh Hùng (Henry)', title: 'Ý tưởng không gian, câu chuyện thiết kế & hành trình khách' },
     { role: 'TRƯỞNG PHÒNG FF&E', name: 'Nguyễn Thị Thúy Vy (Vivian)', title: 'Nội thất, thiết bị & tuyển chọn vật liệu' },
     { role: 'TRƯỞNG PHÒNG KỸ THUẬT', name: 'Nguyễn Vương Linh (Lucas)', title: 'Hồ sơ kỹ thuật & phối hợp đơn vị tư vấn' },
@@ -747,7 +748,7 @@ function slide07(pres, d) {
     { role: 'PHỤ TRÁCH THƯƠNG HIỆU', name: '[Brand Lead]', title: 'Đặt tên, nhận diện & hướng dẫn thương hiệu' },
   ] : [
     { role: 'CHIEF CREATIVE OFFICER', name: 'Gia Huy (Michael)', title: 'M.Architect · 24+ yrs · sets vision & design direction', dark: true },
-    { role: 'CHIEF OPERATING OFFICER', name: 'Nguyễn Văn Toàn (Karo)', title: 'Architect · 20+ yrs · sets vision & design direction', dark: true },
+    { role: 'CHIEF OPERATING OFFICER', name: 'Dương Văn Toàn', title: 'Architect · 20+ yrs · sets vision & design direction', dark: true },
     { role: 'CONCEPT LEAD', name: 'Nguyễn Mạnh Hùng (Henry)', title: 'Spatial concept, narrative & guest journey' },
     { role: 'HEAD OF FF&E', name: 'Nguyễn Thị Thúy Vy (Vivian)', title: 'Furniture, fixtures & material curation' },
     { role: 'TECHNICAL LEAD', name: 'Nguyễn Vương Linh (Lucas)', title: 'Schematic documentation & consultant coordination' },
@@ -793,7 +794,7 @@ function slide07(pres, d) {
 // ─── SLIDE 08 — DESIGN PROCESS ───────────────────────────────────
 function slide08(pres, d) {
   const s = pres.addSlide();
-  slideTitle(s, L('Design Process & Workflow', 'Quy trình & Cách thức Làm việc'), L('Approval-gated at every stage \u00b7 First Draft \u2192 Review \u2192 Final Approval \u2014 auto-adjusts to K\u1ecbch b\u1ea3n A / B / C', 'Có bước duyệt ở mọi giai đoạn · Bản nháp đầu → Rà soát → Duyệt cuối cùng — tự động khớp theo Kịch bản A / B / C'));
+  slideTitle(s, L('Design Process & Workflow', 'Quy trình & Cách thức Triển khai'), L('Approval-gated at every stage \u00b7 First Draft \u2192 Review \u2192 Final Approval \u2014 auto-adjusts to K\u1ecbch b\u1ea3n A / B / C', 'Có bước duyệt ở mọi giai đoạn · Bản nháp đầu → Rà soát → Duyệt cuối cùng — tự động khớp theo Kịch bản A / B / C'));
 
   const scope = d.scope || 'A';
   const defs = getStageDefs(scope);
@@ -949,11 +950,11 @@ function slideWorkStageDeliverable(pres, d) {
 // ─── SLIDE 10 — PROJECT ORGANISATION CHART ───────────────────────
 function slideOrgChart(pres, d) {
   const s = pres.addSlide();
-  slideTitle(s, L('Project Organisation Chart', 'Sơ đồ Tổ chức Dự án'), L('A senior, multidisciplinary team structured around your project', 'Đội ngũ cấp cao, đa lĩnh vực, được tổ chức xoay quanh dự án của bạn'));
+  slideTitle(s, L('Project Organisation Chart', 'Sơ đồ tổ chức Bộ phận triển khai Dự án'), L('A senior, multidisciplinary team structured around your project', 'Đội ngũ cấp cao, đa lĩnh vực, được tổ chức xoay quanh dự án của bạn'));
 
   const team = d.team || (CURRENT_LANG === 'vi' ? [
     { role: 'GIÁM ĐỐC SÁNG TẠO (CCO)', name: 'Gia Huy (Michael)' },
-    { role: 'GIÁM ĐỐC VẬN HÀNH (COO)', name: 'Nguy\u1ec5n V\u0103n To\u00e0n (Karo)' },
+    { role: 'GIÁM ĐỐC VẬN HÀNH (COO)', name: 'Dương Văn Toàn' },
     { role: 'TRƯỞNG NHÓM Ý TƯỞNG', name: 'Nguy\u1ec5n M\u1ea1nh H\u00f9ng (Henry)' },
     { role: 'TRƯỞNG PHÒNG FF&E', name: 'Nguy\u1ec5n Th\u1ecb Th\u00fay Vy (Vivian)' },
     { role: 'TRƯỞNG PHÒNG KỸ THUẬT', name: 'Nguy\u1ec5n V\u01b0\u01a1ng Linh (Lucas)' },
@@ -963,7 +964,7 @@ function slideOrgChart(pres, d) {
     { role: 'PHỤ TRÁCH THƯƠNG HIỆU', name: '[Brand Lead]' },
   ] : [
     { role: 'CHIEF CREATIVE OFFICER', name: 'Gia Huy (Michael)' },
-    { role: 'CHIEF OPERATING OFFICER', name: 'Nguy\u1ec5n V\u0103n To\u00e0n (Karo)' },
+    { role: 'CHIEF OPERATING OFFICER', name: 'Dương Văn Toàn' },
     { role: 'CONCEPT LEAD', name: 'Nguy\u1ec5n M\u1ea1nh H\u00f9ng (Henry)' },
     { role: 'HEAD OF FF&E', name: 'Nguy\u1ec5n Th\u1ecb Th\u00fay Vy (Vivian)' },
     { role: 'TECHNICAL LEAD', name: 'Nguy\u1ec5n V\u01b0\u01a1ng Linh (Lucas)' },
@@ -1136,7 +1137,7 @@ function slideBriefing(pres, d) {
     deliverables: ['Kick-off meeting'],
   };
   const vi = {
-    title: 'Tiếp nhận Yêu cầu & Khởi động',
+    title: 'Tiếp nhận & Huy động',
     leadLine: 'PHỤ TRÁCH — H2X & Khách hàng · HỖ TRỢ — Đơn vị tư vấn',
     purpose: 'Đảm bảo dự án khởi động với đầy đủ đội ngũ thiết kế và tư vấn, cùng yêu cầu đã được thống nhất.',
     covered: [
@@ -1165,7 +1166,7 @@ function slideFeasibility(pres, d) {
     deliverables: ['Overview Concept Page (DWG/PDF)'],
   };
   const vi = {
-    title: 'Khả thi (Tiền Ý tưởng)',
+    title: 'Đánh giá Khả thi & Phương án sơ bộ (Pre Concept)',
     leadLine: 'PHỤ TRÁCH — H2X · HỖ TRỢ — Đơn vị tư vấn',
     purpose: 'Xây dựng câu chuyện thiết kế (design narrative).',
     covered: [
@@ -1247,7 +1248,7 @@ function slideDevelopmentExplainer(pres, d) {
     deliverables: ['Technical docs: Fit-out, Built-in (DWG/PDF)', 'Technical docs: full MEP design (DWG/PDF)', 'Specifications (Digital list)', 'Loose Furniture list', 'RCP, wall/floor finish & electrical plans', 'Large-scale detail drawings'],
   };
   const vi = {
-    title: 'Thiết kế Phát triển',
+    title: 'Thiết kế Kĩ thuật',
     leadLine: 'PHỤ TRÁCH — H2X · HỖ TRỢ — Đơn vị tư vấn · Phát triển từ Thiết kế Cơ sở đã duyệt',
     purpose: 'Phát triển toàn bộ bộ bản vẽ kỹ thuật để đảm bảo thiết kế bám sát định hướng đã xác lập ở giai đoạn Thiết kế Cơ sở.',
     covered: [
@@ -1274,7 +1275,7 @@ function slideConstructionDocsExplainer(pres, d) {
   };
   const vi = {
     title: 'Thiết kế bản vẽ thi công',
-    leadLine: 'PHỤ TRÁCH — H2X · HỖ TRỢ — Đơn vị tư vấn · Giai đoạn cuối, phát triển từ Thiết kế Phát triển đã duyệt',
+    leadLine: 'PHỤ TRÁCH — H2X · HỖ TRỢ — Đơn vị tư vấn · Giai đoạn cuối, phát triển từ Thiết kế Kĩ thuật đã duyệt',
     purpose: 'Xuất bộ hồ sơ bản vẽ kỹ thuật thi công chi tiết đầy đủ để triển khai tại công trường — tài liệu chính thức phục vụ thi công.',
     covered: [
       'Phát triển đầy đủ bộ bản vẽ kỹ thuật thi công dựa trên thiết kế đã duyệt: bản vẽ fit-out và built-in.',
@@ -2055,8 +2056,32 @@ function slideHourlyRates(pres, d) {
   });
 
   const noteY = 1.8 + 0.32 + rates.length * 0.36 + 0.15;
+  const apxEY = Math.max(noteY, litY + 0.5) + 0.1;
+
+  // Appendix E — Author Supervision (site visits included + extra-visit fee)
+  const visits = d.authorSupervisionVisits || 3;
+  const extraFee = d.authorSupervisionExtraFee || 10000000;
+  const extraFeeFmt = Number(extraFee).toLocaleString('vi-VN');
+  secLabel(s, L('APPENDIX E \u2014 AUTHOR SUPERVISION', 'PHỤ LỤC E \u2014 GIÁM SÁT TÁC GIẢ'), ML, apxEY, CW);
+  s.addShape('rect', { x: ML, y: apxEY + 0.3, w: CW, h: 0.62, fill: { color: C.rowalt }, line: { color: C.border, width: 0.5 } });
+  s.addText([
+    { text: L('Site visits included: ', 'Số lần đi công trường bao gồm trong phí: '), options: { fontFace: F.bold, color: C.black } },
+    { text: L(`${visits} visits`, `${visits} lần`), options: { fontFace: F.bold, color: C.terradk } },
+  ], {
+    x: ML + 0.2, y: apxEY + 0.36, w: CW - 0.4, h: 0.24,
+    fontSize: SZ.body, margin: 0, valign: 'top',
+  });
+  s.addText([
+    { text: L('Additional visit (4th onward): ', 'Phát sinh từ lần thứ 4 trở đi: '), options: { fontFace: F.bold, color: C.black } },
+    { text: L(`${extraFeeFmt} VND / visit`, `${extraFeeFmt} VND / lần`), options: { fontFace: F.bold, color: C.terradk } },
+  ], {
+    x: ML + 0.2, y: apxEY + 0.64, w: CW - 0.4, h: 0.24,
+    fontSize: SZ.body, margin: 0, valign: 'top',
+  });
+
+  const finalNoteY = apxEY + 1.1;
   s.addText(L('Rates exclude VAT and other applicable taxes \u00b7 Reference conversion 1 USD \u2248 26,000 VND \u00b7 Rates apply for the current year and may be revised periodically.', 'Đơn giá chưa bao gồm VAT và các loại thuế liên quan khác \u00b7 Tỷ giá tham khảo 1 USD \u2248 26.000 VND \u00b7 Đơn giá áp dụng cho năm hiện tại và có thể được điều chỉnh định kỳ.'), {
-    x: ML, y: Math.max(noteY, litY + 0.5), w: CW, h: 0.4,
+    x: ML, y: finalNoteY, w: CW, h: 0.4,
     fontSize: 7.5, fontFace: F.light, color: C.gray, italic: true, margin: 0, lineSpacingMultiple: 1.25,
   });
 
