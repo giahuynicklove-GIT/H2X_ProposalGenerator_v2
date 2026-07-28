@@ -872,32 +872,11 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
       <div class="sec-head auto-mode">
         <div class="sec-num">SLIDE 07</div>
         <div class="sec-title">Project Team</div>
-        <div class="sec-sub">Team chuẩn H2X — tự động. Liên hệ admin nếu cần thay đổi thành viên.</div>
-        <div class="mode-badge auto">✦ Auto-generate</div>
+        <div class="sec-sub">Team chuẩn H2X — mặc định sẵn, có thể sửa Tên / Diễn giải / Số năm kinh nghiệm từng vị trí</div>
+        <div class="mode-badge red">● Nhập thông tin (có mặc định)</div>
       </div>
       <div class="sec-body">
-        <div class="team-box" id="teamBoxS7">
-          <strong>Chief Creative Officer</strong> — Gia Huy (Michael) · M.Architect · 24+ yrs<br>
-          <strong>Chief Operating Officer</strong> — Nguyễn Văn Toàn (Karo) · Architect · 20+ yrs<br>
-          <strong>Concept Lead</strong> — Nguyễn Mạnh Hùng (Henry) · Spatial concept, narrative & guest journey<br>
-          <strong>Head of FF&E</strong> — Nguyễn Thị Thúy Vy (Vivian) · Furniture, fixtures & material curation<br>
-          <strong>Technical Lead</strong> — Nguyễn Vương Linh (Lucas) · Schematic documentation & consultant coordination<br>
-          <strong>3D Visualisation & PM</strong> — Đỗ Danh Sơn · Photorealistic renders · schedule, reviews & delivery<br>
-          <strong>Lighting Designer</strong> — [Lighting Lead] · Atmosphere, fixture & control strategy<br>
-          <strong>Audio Visual Designer</strong> — [AV Lead] · Soundscape, AV & display concept<br>
-          <strong>Brand Lead</strong> — [Brand Lead] · Naming, identity & brand guidelines
-        </div>
-        <div class="team-box" id="teamBoxS7vi" style="display:none">
-          <strong>Giám đốc Sáng tạo (CCO)</strong> — Gia Huy (Michael) · Th.S Kiến trúc · 24+ năm kinh nghiệm<br>
-          <strong>Giám đốc Vận hành (COO)</strong> — Nguyễn Văn Toàn (Karo) · Kiến trúc sư · 20+ năm kinh nghiệm<br>
-          <strong>Trưởng nhóm Ý tưởng</strong> — Nguyễn Mạnh Hùng (Henry) · Ý tưởng không gian, câu chuyện thiết kế & hành trình khách<br>
-          <strong>Trưởng phòng FF&E</strong> — Nguyễn Thị Thúy Vy (Vivian) · Nội thất, thiết bị & tuyển chọn vật liệu<br>
-          <strong>Trưởng phòng Kỹ thuật</strong> — Nguyễn Vương Linh (Lucas) · Hồ sơ kỹ thuật & phối hợp đơn vị tư vấn<br>
-          <strong>3D Diễn họa & Quản lý Dự án</strong> — Đỗ Danh Sơn · Hình ảnh render thực tế · tiến độ, rà soát & bàn giao<br>
-          <strong>Thiết kế Chiếu sáng</strong> — [Lighting Lead] · Không khí không gian, thiết bị & chiến lược điều khiển<br>
-          <strong>Thiết kế Nghe nhìn</strong> — [AV Lead] · Âm thanh, tích hợp AV & màn hình<br>
-          <strong>Phụ trách Thương hiệu</strong> — [Brand Lead] · Đặt tên, nhận diện & hướng dẫn thương hiệu
-        </div>
+        <div id="teamEditRows"></div>
       </div>
       <div class="sec-footer">
         <button class="btn btn-back" onclick="go(6)">← Quay lại</button>
@@ -1379,7 +1358,15 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
         <div class="sec-sub">Appendix C & D — tự động, đơn giá giờ công & phí in ấn (USD)</div>
         <div class="mode-badge auto">✦ Auto-generate</div>
       </div>
-      <div class="sec-body"><div class="team-box">Bảng đơn giá giờ công theo cấp bậc + phí in ấn/lithography — tự động tạo, không cần nhập liệu.</div></div>
+      <div class="sec-body">
+        <div class="team-box">Bảng đơn giá giờ công theo cấp bậc + phí in ấn/lithography — tự động tạo, không cần nhập liệu.</div>
+        <div class="divider"></div>
+        <div class="field-hint" style="margin-bottom:6px">Phụ lục E — Giám sát Tác giả (Appendix E — Author Supervision)</div>
+        <div class="frow c2">
+          <div class="field"><label>Số lần đi công trường bao gồm trong phí</label><input id="authorSupervisionVisits" type="number" min="0" step="1" placeholder="3" value="3"/></div>
+          <div class="field"><label>Phí phát sinh từ lần thứ 4 trở đi (VND/lần)</label><input id="authorSupervisionExtraFee" type="number" min="0" step="100000" placeholder="10000000" value="10000000"/></div>
+        </div>
+      </div>
       <div class="sec-footer">
         <button class="btn btn-back" onclick="go(26)">← Quay lại</button>
         <button class="btn btn-next" onclick="go(28)">Tiếp theo →</button>
@@ -1743,6 +1730,62 @@ let DEFAULT_ZONES = ZONE_TEMPLATES['Hotel & Resort'];
 function getZonesForTypology(typology) {
   const src = (window.currentLang === 'vi') ? VI_ZONE_TEMPLATES : ZONE_TEMPLATES;
   return src[typology] || src['Hotel & Resort'];
+}
+
+// ─── PROJECT TEAM (Slide 07) — editable roster, defaults = current H2X team ──
+// role: hiển thị theo ngôn ngữ hiện tại (cố định, không sửa) — name/desc/years: người dùng có thể sửa.
+const TEAM_DEFAULTS_EN = [
+  { role: 'CHIEF CREATIVE OFFICER', name: 'Gia Huy (Michael)', desc: 'M.Architect · sets vision & design direction', years: 24, dark: true },
+  { role: 'CHIEF OPERATING OFFICER', name: 'Dương Văn Toàn', desc: 'Architect · sets vision & design direction', years: 20, dark: true },
+  { role: 'CONCEPT LEAD', name: 'Nguyễn Mạnh Hùng (Henry)', desc: 'Spatial concept, narrative & guest journey', years: '' },
+  { role: 'HEAD OF FF&E', name: 'Nguyễn Thị Thúy Vy (Vivian)', desc: 'Furniture, fixtures & material curation', years: '' },
+  { role: 'TECHNICAL LEAD', name: 'Nguyễn Vương Linh (Lucas)', desc: 'Schematic documentation & consultant coordination', years: '' },
+  { role: '3D VISUALISATION & PM', name: 'Đỗ Danh Sơn', desc: 'Photorealistic renders · schedule, reviews & delivery', years: '' },
+  { role: 'LIGHTING DESIGNER', name: '[Lighting Lead]', desc: 'Atmosphere, fixture & control strategy', years: '' },
+  { role: 'AUDIO VISUAL DESIGNER', name: '[AV Lead]', desc: 'Soundscape, AV & display concept', years: '' },
+  { role: 'BRAND LEAD', name: '[Brand Lead]', desc: 'Naming, identity & brand guidelines', years: '' },
+];
+const TEAM_DEFAULTS_VI = [
+  { role: 'GIÁM ĐỐC SÁNG TẠO (CCO)', name: 'Gia Huy (Michael)', desc: 'Th.S Kiến trúc · định hướng tầm nhìn & thiết kế', years: 24, dark: true },
+  { role: 'GIÁM ĐỐC VẬN HÀNH (COO)', name: 'Dương Văn Toàn', desc: 'Kiến trúc sư · định hướng tầm nhìn & thiết kế', years: 20, dark: true },
+  { role: 'TRƯỞNG NHÓM Ý TƯỞNG', name: 'Nguyễn Mạnh Hùng (Henry)', desc: 'Ý tưởng không gian, câu chuyện thiết kế & hành trình khách', years: '' },
+  { role: 'TRƯỞNG PHÒNG FF&E', name: 'Nguyễn Thị Thúy Vy (Vivian)', desc: 'Nội thất, thiết bị & tuyển chọn vật liệu', years: '' },
+  { role: 'TRƯỞNG PHÒNG KỸ THUẬT', name: 'Nguyễn Vương Linh (Lucas)', desc: 'Hồ sơ kỹ thuật & phối hợp đơn vị tư vấn', years: '' },
+  { role: '3D DIỄN HỌA & QUẢN LÝ DỰ ÁN', name: 'Đỗ Danh Sơn', desc: 'Phối cảnh chân thực · tiến độ, rà soát & bàn giao', years: '' },
+  { role: 'THIẾT KẾ CHIẾU SÁNG', name: '[Lighting Lead]', desc: 'Không khí không gian, thiết bị & chiến lược điều khiển', years: '' },
+  { role: 'THIẾT KẾ NGHE NHÌN', name: '[AV Lead]', desc: 'Âm thanh, tích hợp AV & màn hình', years: '' },
+  { role: 'PHỤ TRÁCH THƯƠNG HIỆU', name: '[Brand Lead]', desc: 'Đặt tên, nhận diện & hướng dẫn thương hiệu', years: '' },
+];
+
+function buildTeamEditRows() {
+  const wrap = document.getElementById('teamEditRows');
+  if (!wrap) return;
+  const defaults = window.currentLang === 'vi' ? TEAM_DEFAULTS_VI : TEAM_DEFAULTS_EN;
+  // Giữ lại giá trị người dùng đã sửa (nếu có) khi đổi ngôn ngữ / rebuild
+  const prev = wrap.dataset.filled === '1' ? defaults.map((_, i) => ({
+    name: document.getElementById('team_name_' + i)?.value,
+    desc: document.getElementById('team_desc_' + i)?.value,
+    years: document.getElementById('team_years_' + i)?.value,
+  })) : null;
+  wrap.innerHTML = defaults.map((m, i) => `
+    <div class="frow c3" style="align-items:flex-end;margin-bottom:6px">
+      <div class="field" style="flex:0 0 220px"><label style="color:var(--terra)">${m.role}</label><input id="team_name_${i}" value="${(prev?.[i]?.name ?? m.name).replace(/"/g,'&quot;')}"/></div>
+      <div class="field"><label>Diễn giải</label><input id="team_desc_${i}" value="${(prev?.[i]?.desc ?? m.desc).replace(/"/g,'&quot;')}"/></div>
+      <div class="field" style="flex:0 0 130px"><label>Số năm KN</label><input id="team_years_${i}" type="number" min="0" value="${prev?.[i]?.years ?? m.years}" placeholder="—"/></div>
+    </div>`).join('');
+  wrap.dataset.filled = '1';
+}
+
+function collectTeam() {
+  const defaults = window.currentLang === 'vi' ? TEAM_DEFAULTS_VI : TEAM_DEFAULTS_EN;
+  const yrsLabel = window.currentLang === 'vi' ? 'năm' : 'yrs';
+  return defaults.map((m, i) => {
+    const name = document.getElementById('team_name_' + i)?.value || m.name;
+    const desc = document.getElementById('team_desc_' + i)?.value || m.desc;
+    const years = document.getElementById('team_years_' + i)?.value;
+    const title = years ? `${desc} \u00b7 ${years}+ ${yrsLabel}` : desc;
+    return { role: m.role, name, title, dark: !!m.dark };
+  });
 }
 
 // ─── NAV ─────────────────────────────────────────────────────────
@@ -2162,6 +2205,9 @@ async function generate(){
     feeAV:sel.AV?g('feeAV'):'0',
     phone:g('phone'), email:g('email'), website:g('website'),
     ctaText:g('ctaText'), addressHN:g('addrHN'), addressHCM:g('addrHCM'),
+    authorSupervisionVisits: parseInt(g('authorSupervisionVisits'),10) || 3,
+    authorSupervisionExtraFee: parseInt(g('authorSupervisionExtraFee'),10) || 10000000,
+    team: (typeof collectTeam === 'function') ? collectTeam() : undefined,
     heroImage: uploadedImages.hero || null,
     moodImages: [uploadedImages.mood1 || null, uploadedImages.mood2 || null, uploadedImages.mood3 || null],
     closingImage: uploadedImages.closing || null,
@@ -2425,21 +2471,21 @@ window.currentLang = localStorage.getItem(LANG_STORAGE) || 'en';
 const I18N_VI = {
   // Section titles (sec-title) & nav sidebar
   'Cover & Project Info': 'Trang bìa & Thông tin dự án',
-  'Project Understanding': 'Hiểu biết Dự án',
+  'Project Understanding': 'Thông tin Dự án',
   'Scope of Services': 'Phạm vi Dịch vụ',
-  'Indicative Zoning Programme': 'Chương trình Phân khu (Zoning)',
+  'Indicative Zoning Programme': 'Phân khu chức năng (Zoning)',
   'Design Language': 'Ngôn ngữ Thiết kế',
   'Lighting Design': 'Thiết kế Chiếu sáng',
   'Project Team': 'Đội ngũ Dự án',
-  'Design Process & Workflow': 'Quy trình & Cách thức Làm việc',
+  'Design Process & Workflow': 'Quy trình & Cách thức Triển khai',
   'Work Stage Deliverable': 'Sản phẩm theo Giai đoạn',
-  'Project Organisation Chart': 'Sơ đồ Tổ chức Dự án',
+  'Project Organisation Chart': 'Sơ đồ tổ chức Bộ phận triển khai Dự án',
   'Design Work Phase': 'Các Giai đoạn Thiết kế',
-  'Briefing and Mobilisation': 'Tiếp nhận Yêu cầu & Khởi động',
-  'Feasibility (Pre-Concept Design)': 'Khả thi (Tiền Ý tưởng)',
+  'Briefing and Mobilisation': 'Tiếp nhận & Huy động',
+  'Feasibility (Pre-Concept Design)': 'Đánh giá Khả thi & Phương án sơ bộ (Pre Concept)',
   'Concept Design': 'Thiết kế Ý tưởng',
   'Schematic Design': 'Thiết kế Sơ bộ',
-  'Development Design': 'Thiết kế Phát triển',
+  'Development Design': 'Thiết kế Kĩ thuật',
   'Construction Documents': 'Hồ sơ Thi công',
   'Document Issue Schedule': 'Tiến độ Phát hành Hồ sơ',
   'Design Fee': 'Phí Thiết kế',
@@ -2582,6 +2628,7 @@ function applyLanguage(lang) {
   if (typeof buildDocSchedule === 'function') buildDocSchedule();
   if (typeof calcFee === 'function') calcFee();
   if (typeof setScope === 'function') { const s = document.getElementById('scope')?.value; if (s) setScopeInfoOnly(s); }
+  if (typeof buildTeamEditRows === 'function') buildTeamEditRows();
   if (document.getElementById('summaryTable') && cur === 30 && typeof buildSummary === 'function') buildSummary();
 }
 
@@ -2597,6 +2644,7 @@ function initApp() {
   buildZoneTable();
   calcFee();
   buildDocSchedule();
+  buildTeamEditRows();
   refreshApiKeyButtonState();
   applyLanguage(window.currentLang);
 }
