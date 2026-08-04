@@ -10,7 +10,26 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <script>
-  const TOOL_ID = 'fee-generator'; // đổi thành ID khác cho mỗi tool HTML sau này
+  const TOOL_ID = 'fee-generator'; // legacy id — vẫn hiển thị trong thông báo lỗi
+  const TOOL_KEY = 'feeProposalGenerator';
+  // Keep in sync with the same block in server.js and public/admin.html.
+  const ALL_TOOL_KEYS = ['feeProposalGenerator', 'ffeLooseCalculation', 'h2xQsApp'];
+  const LEGACY_TOOL_MAP = { 'fee-generator': 'feeProposalGenerator' };
+  function normalizeToolAccess(userData) {
+    userData = userData || {};
+    const access = {};
+    ALL_TOOL_KEYS.forEach(k => { access[k] = false; });
+    if (userData.toolAccess) {
+      ALL_TOOL_KEYS.forEach(k => { if (userData.toolAccess[k] === true) access[k] = true; });
+    }
+    if (Array.isArray(userData.tools)) {
+      userData.tools.forEach(legacyId => {
+        const mapped = LEGACY_TOOL_MAP[legacyId];
+        if (mapped) access[mapped] = true;
+      });
+    }
+    return access;
+  }
   const firebaseConfig = {
     apiKey: "AIzaSyDhwiBhbfTyZvwrOBs0v_ti5WWBuK_hptM",
     authDomain: "h2x-tools-auth.firebaseapp.com",
@@ -2452,7 +2471,9 @@ auth.onAuthStateChanged(async (user) => {
   setAuthStatus('Đang kiểm tra quyền truy cập...');
   try {
     const doc = await db.collection('users').doc(user.email).get();
-    if (doc.exists && Array.isArray(doc.data().tools) && doc.data().tools.includes(TOOL_ID)) {
+    const data = doc.exists ? doc.data() : {};
+    const access = normalizeToolAccess(data);
+    if (doc.exists && data.active !== false && access[TOOL_KEY]) {
       showApp();
     } else {
       showAccessDenied(user.email);
