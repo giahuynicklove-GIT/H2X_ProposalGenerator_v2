@@ -1,0 +1,19 @@
+{
+  "apps": [
+    {
+      "key": "feeProposalGenerator",
+      "label": "Fee Proposal Generator",
+      "legacyIds": ["fee-generator"]
+    },
+    {
+      "key": "ffeLooseCalculation",
+      "label": "FF&E Loose Calculation",
+      "legacyIds": []
+    },
+    {
+      "key": "h2xQsApp",
+      "label": "Báo cáo Khái toán tự động",
+      "legacyIds": []
+    }
+  ]
+}
