@@ -9,6 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="/js/account.js"></script>
 <script>
   const TOOL_ID = 'fee-generator'; // legacy id — vẫn hiển thị trong thông báo lỗi
   const TOOL_KEY = 'feeProposalGenerator';
@@ -81,6 +82,21 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
 .btn-ai-prompt+.btn-ai-prompt{margin-left:10px}
 .btn-ai-prompt.has-key{background:#4a7c4a}
 .btn-ai-prompt:hover{background:var(--terra-dk)}
+
+/* ACCOUNT MENU */
+.account-area{display:none;position:relative;margin-left:10px}
+.account-area.show{display:flex}
+.account-btn{display:flex;align-items:center;gap:6px;background:#2A2520;border:1px solid #3A3530;color:#fff;padding:7px 10px;border-radius:5px;font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;max-width:180px}
+.account-btn:hover{background:#332D26}
+.account-avatar{width:20px;height:20px;border-radius:50%;background:var(--terra);color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.account-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px}
+.account-caret{font-size:9px;color:var(--gray-lt)}
+.account-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid var(--border);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.18);min-width:220px;padding:10px;z-index:300}
+.account-menu.open{display:block}
+.account-menu-email{font-size:11px;color:var(--gray);word-break:break-all;padding:0 4px 10px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.account-menu-signout{width:100%;background:var(--terra);color:#fff;border:none;padding:9px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.account-menu-signout:hover{background:var(--terra-dk)}
+.account-menu-error{font-size:11px;color:#c0392b;margin-top:8px}
 .prompt-modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,20,.65);z-index:200;align-items:center;justify-content:center;padding:24px}
 .prompt-modal-overlay.open{display:flex}
 .prompt-modal{background:#fff;border-radius:8px;max-width:820px;width:100%;max-height:88vh;overflow-y:auto;padding:0}
@@ -272,6 +288,12 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
   .sidebar{position:static}
   .frow.c2,.frow.c3,.ai-input-row{grid-template-columns:1fr}
   .addon-grid{grid-template-columns:1fr}
+  header{flex-wrap:wrap;row-gap:8px;padding:14px 18px}
+  .btn-ai-prompt{padding:8px 10px}
+  .account-area{margin-left:0}
+  .account-name{display:none}
+  .account-btn{padding:7px 8px}
+  .account-menu{right:auto;left:0}
 }
 </style>
 </head>
@@ -304,6 +326,18 @@ header{background:var(--dark);padding:14px 36px;display:flex;align-items:center;
   <button class="btn-ai-prompt" id="btnApiKey" onclick="openApiKeyModal()">🔑 API Key</button>
   <a class="btn-ai-prompt" href="/fonts/H2X-Fonts.zip" download style="text-decoration:none;display:inline-flex;align-items:center">⬇ Download Font</a>
   <button class="btn-ai-prompt" onclick="openPromptModal()">🎨 Prompt ảnh AI</button>
+  <div class="account-area" id="accountArea">
+    <button class="account-btn" id="accountBtn" onclick="toggleAccountMenu(event)" aria-haspopup="true" aria-expanded="false">
+      <span class="account-avatar" id="accountAvatar"></span>
+      <span class="account-name" id="accountName"></span>
+      <span class="account-caret">▾</span>
+    </button>
+    <div class="account-menu" id="accountMenu">
+      <div class="account-menu-email" id="accountMenuEmail"></div>
+      <button class="account-menu-signout" id="accountSignOutBtn" onclick="signOutUser()">Đăng xuất</button>
+      <div class="account-menu-error" id="accountMenuError"></div>
+    </div>
+  </div>
 </header>
 
 <!-- AI IMAGE PROMPT MODAL -->
@@ -2432,9 +2466,60 @@ function signInWithGoogle() {
   });
 }
 
-function signOutUser() {
-  auth.signOut();
+async function signOutUser() {
+  const errEl = document.getElementById('accountMenuError');
+  if (errEl) errEl.textContent = '';
+  try {
+    await auth.signOut();
+    // onAuthStateChanged (below) picks this up: clears currentUser and
+    // switches back to the auth gate — no page reload, workflow state
+    // in memory is simply left behind since #appContent gets hidden.
+  } catch (e) {
+    const msg = 'Đăng xuất thất bại: ' + e.message + ' — vui lòng thử lại.';
+    const gateVisible = !document.getElementById('authGate').classList.contains('hidden');
+    if (gateVisible) {
+      setAuthStatus(msg, true);
+    } else if (errEl) {
+      errEl.textContent = msg;
+    } else {
+      alert(msg);
+    }
+  }
 }
+
+// ─── ACCOUNT MENU (header) ──────────────────────────────────────────
+// getAccountLabel / getAvatarInitial come from /js/account.js (shared with
+// test/account.test.js — see that file for the pure-logic coverage).
+function updateAccountUI(user) {
+  const label = getAccountLabel(user);
+  document.getElementById('accountName').textContent = label;
+  document.getElementById('accountAvatar').textContent = getAvatarInitial(label);
+  document.getElementById('accountMenuEmail').textContent = user.email || '';
+  document.getElementById('accountMenuError').textContent = '';
+  document.getElementById('accountArea').classList.add('show');
+}
+function hideAccountUI() {
+  closeAccountMenu();
+  document.getElementById('accountArea').classList.remove('show');
+}
+function toggleAccountMenu(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('accountMenu');
+  const btn = document.getElementById('accountBtn');
+  const willOpen = !menu.classList.contains('open');
+  menu.classList.toggle('open', willOpen);
+  if (btn) btn.setAttribute('aria-expanded', String(willOpen));
+}
+function closeAccountMenu() {
+  const menu = document.getElementById('accountMenu');
+  const btn = document.getElementById('accountBtn');
+  if (menu) menu.classList.remove('open');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+document.addEventListener('click', (e) => {
+  const area = document.getElementById('accountArea');
+  if (area && !area.contains(e.target)) closeAccountMenu();
+});
 
 function showAuthGate() {
   document.getElementById('authGate').classList.remove('hidden');
@@ -2460,6 +2545,7 @@ function showAccessDenied(email) {
 auth.onAuthStateChanged(async (user) => {
   if (!user) {
     currentUser = null;
+    hideAccountUI();
     document.getElementById('authTitle').textContent = 'Đăng nhập để sử dụng';
     document.getElementById('authSub').textContent = 'Fee Proposal Generator — chỉ dành cho thành viên được cấp quyền';
     document.getElementById('btnGoogleSignIn').style.display = '';
@@ -2474,11 +2560,14 @@ auth.onAuthStateChanged(async (user) => {
     const data = doc.exists ? doc.data() : {};
     const access = normalizeToolAccess(data);
     if (doc.exists && data.active !== false && access[TOOL_KEY]) {
+      updateAccountUI(user);
       showApp();
     } else {
+      hideAccountUI();
       showAccessDenied(user.email);
     }
   } catch (e) {
+    hideAccountUI();
     setAuthStatus('Lỗi kiểm tra quyền: ' + e.message + ' — liên hệ quản trị viên.', true);
   }
 });

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>H2X Studio — Quản lý quyền truy cập</title>
+<title>H2X Access Manager</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
@@ -24,16 +24,19 @@
 :root {
   --black:#141414; --offwhite:#F9F9F7; --cream:#F2F0ED; --white:#FFFFFF;
   --terra:#C7A07F; --terra-dk:#B8895F;
-  --gray:#999; --border:#E0DDD8; --dark:#1A1814;
-  --red:#C0392B; --green:#1a7a3a;
+  --gray:#999; --gray-lt:#E0DDD8; --border:#E0DDD8; --dark:#1A1814;
+  --red:#C0392B; --red-bg:#FBEAE8; --green:#1a7a3a; --green-bg:#E8F3EA;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',sans-serif;background:var(--offwhite);color:var(--black);min-height:100vh}
-header{background:var(--dark);padding:16px 36px;display:flex;align-items:center;gap:14px}
+body{font-family:'Inter',sans-serif;background:var(--offwhite);color:var(--black);min-height:100vh;font-size:13px}
+header{background:var(--dark);padding:16px 36px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:200}
 .logo-h2x{font-family:'Playfair Display',serif;color:#fff;font-size:20px;letter-spacing:1px}
 .logo-studio{font-size:9px;color:var(--terra);letter-spacing:2px}
 .header-title{font-size:12px;color:var(--terra);margin-left:6px}
-.header-signout{margin-left:auto;font-size:12px;color:#aaa;cursor:pointer;text-decoration:underline}
+.header-account{margin-left:auto;display:flex;align-items:center;gap:10px}
+.header-account-email{font-size:11.5px;color:#cfcac2;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.header-signout{font-size:12px;color:#aaa;cursor:pointer;text-decoration:underline;background:none;border:none;font-family:inherit}
+.header-signout:hover{color:#fff}
 
 #authGate{position:fixed;inset:0;background:var(--dark);z-index:500;display:flex;align-items:center;justify-content:center}
 #authGate.hidden{display:none}
@@ -48,41 +51,76 @@ header{background:var(--dark);padding:16px 36px;display:flex;align-items:center;
 .auth-status{margin-top:16px;font-size:12px;color:var(--gray)}
 .auth-status.error{color:var(--red)}
 
-#appContent{display:none;max-width:960px;margin:0 auto;padding:32px 24px}
+#appContent{display:none;max-width:1080px;margin:0 auto;padding:32px 24px 60px}
 #appContent.ready{display:block}
 h1{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:4px}
-.sub{font-size:13px;color:var(--gray);margin-bottom:28px}
+.sub{font-size:13px;color:var(--gray);margin-bottom:26px}
+
+/* DASHBOARD STAT TILES */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.stat-tile{background:#fff;border:1px solid var(--border);border-radius:8px;padding:16px 18px}
+.stat-label{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.stat-value{font-family:'Inter',sans-serif;font-weight:600;font-size:28px;color:var(--black);line-height:1}
+.stat-value.green{color:var(--green)}
+.stat-value.red{color:var(--red)}
+.stat-value.terra{color:var(--terra-dk)}
+.app-breakdown{background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin-bottom:24px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.app-breakdown-label{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-right:4px}
+.app-chip{display:flex;align-items:center;gap:6px;background:var(--cream);border-radius:14px;padding:5px 12px;font-size:12px}
+.app-chip b{font-weight:600;color:var(--terra-dk)}
 
 .card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:22px;margin-bottom:24px}
 .card h2{font-family:'Playfair Display',serif;font-size:16px;margin-bottom:14px;font-weight:400}
 .frow{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
 .field{flex:1;min-width:200px}
 .field label{display:block;font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.field input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:'Inter',sans-serif;outline:none}
-.field input:focus{border-color:var(--terra)}
+.field input,.field select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:'Inter',sans-serif;outline:none;background:#fff}
+.field input:focus,.field select:focus{border-color:var(--terra)}
 .tool-list{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px}
 .tool-chk{display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer}
 .tool-chk input{width:auto;cursor:pointer}
 .btn{padding:10px 20px;border-radius:5px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
 .btn-primary{background:var(--terra);color:#fff}
 .btn-primary:hover{background:var(--terra-dk)}
+.btn-secondary{background:#fff;color:var(--gray);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--terra);color:var(--terra-dk)}
 .btn-danger{background:#fff;color:var(--red);border:1px solid #e8c8c4}
 .btn-danger:hover{background:#fdf3f2}
 .form-status{font-size:12px;margin-top:10px;min-height:16px}
 .form-status.ok{color:var(--green)}
 .form-status.error{color:var(--red)}
 
+/* SEARCH + FILTER TOOLBAR */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.toolbar .field{min-width:180px}
+.toolbar .field.search{flex:2;min-width:220px}
+.result-count{font-size:11.5px;color:var(--gray);margin-bottom:10px}
+
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);padding:8px 10px;border-bottom:1.5px solid var(--black)}
 td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
 tr:hover td{background:var(--offwhite)}
+.user-name{font-size:11.5px;color:var(--gray)}
 .tool-tag{display:inline-block;background:var(--cream);color:var(--terra-dk);font-size:10.5px;padding:2px 8px;border-radius:10px;margin:2px 3px 2px 0}
-.row-actions{display:flex;gap:8px}
+.status-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:10px}
+.status-badge.active{background:var(--green-bg);color:var(--green)}
+.status-badge.locked{background:var(--red-bg);color:var(--red)}
+.updated-at{font-size:11.5px;color:var(--gray);white-space:nowrap}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap}
 .row-actions button{font-size:11px;padding:5px 10px;border-radius:4px;border:1px solid var(--border);background:#fff;cursor:pointer}
 .row-actions button:hover{border-color:var(--terra);color:var(--terra-dk)}
 .row-actions button.del:hover{border-color:var(--red);color:var(--red)}
+.row-actions button:disabled{opacity:.4;cursor:not-allowed}
+.row-actions button:disabled:hover{border-color:var(--border);color:inherit}
+.self-note{font-size:10px;color:var(--gray);display:block;margin-top:2px}
 .empty-note{font-size:12px;color:var(--gray);padding:20px;text-align:center}
 .loading-note{font-size:12px;color:var(--gray);padding:14px 0}
+
+@media(max-width:780px){
+  .stat-row{grid-template-columns:repeat(2,1fr)}
+  header{padding:14px 18px}
+  #appContent{padding:24px 14px 60px}
+}
 </style>
 </head>
 <body>
@@ -91,8 +129,8 @@ tr:hover td{background:var(--offwhite)}
   <div class="auth-card">
     <div class="auth-logo">H2X</div>
     <div class="auth-logo-sub">STUDIO</div>
-    <div class="auth-title" id="authTitle">Trang quản trị</div>
-    <div class="auth-sub" id="authSub">Chỉ dành cho quản trị viên H2X — đăng nhập để quản lý quyền truy cập các tool</div>
+    <div class="auth-title" id="authTitle">H2X Access Manager</div>
+    <div class="auth-sub" id="authSub">Chỉ dành cho quản trị viên H2X — đăng nhập để quản lý quyền truy cập các app</div>
     <button class="btn-google" id="btnGoogleSignIn" onclick="signInWithGoogle()">
       <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Đăng nhập bằng Google
@@ -105,15 +143,42 @@ tr:hover td{background:var(--offwhite)}
   <header style="margin:-32px -24px 28px;">
     <span class="logo-h2x">H2X</span>
     <span class="logo-studio">STUDIO</span>
-    <span class="header-title">Quản lý quyền truy cập</span>
-    <span class="header-signout" onclick="signOutUser()">Đăng xuất</span>
+    <span class="header-title">Access Manager</span>
+    <div class="header-account">
+      <span class="header-account-email" id="headerAccountEmail"></span>
+      <button class="header-signout" onclick="signOutUser()">Đăng xuất</button>
+    </div>
   </header>
 
-  <h1>Quản lý quyền truy cập</h1>
-  <div class="sub">Thêm / xoá email được phép dùng các tool nội bộ H2X</div>
+  <h1>H2X Access Manager</h1>
+  <div class="sub">Quản lý quyền truy cập tất cả app nội bộ H2X từ một nơi duy nhất</div>
+
+  <!-- DASHBOARD -->
+  <div class="stat-row">
+    <div class="stat-tile">
+      <div class="stat-label">Tổng user</div>
+      <div class="stat-value" id="statTotal">—</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-label">Đang hoạt động</div>
+      <div class="stat-value green" id="statActive">—</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-label">Đã khóa</div>
+      <div class="stat-value red" id="statLocked">—</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-label">Số app</div>
+      <div class="stat-value terra" id="statApps">—</div>
+    </div>
+  </div>
+  <div class="app-breakdown" id="appBreakdown">
+    <span class="app-breakdown-label">User theo app</span>
+    <span class="loading-note">Đang tải...</span>
+  </div>
 
   <div class="card">
-    <h2>Thêm hoặc cập nhật quyền</h2>
+    <h2 id="formTitle">Thêm hoặc cập nhật quyền</h2>
     <div class="frow">
       <div class="field" style="flex:2">
         <label>Email</label>
@@ -125,32 +190,60 @@ tr:hover td{background:var(--offwhite)}
       </div>
     </div>
     <div class="field" style="margin-bottom:14px">
-      <label>Tool được phép dùng</label>
-      <div class="tool-list" id="toolList"></div>
+      <label>App được phép dùng</label>
+      <div class="tool-list" id="toolList"><span class="loading-note">Đang tải danh mục app...</span></div>
     </div>
     <button class="btn btn-primary" onclick="saveUser()">Lưu quyền</button>
+    <button class="btn btn-secondary" onclick="resetForm()" id="btnCancelEdit" style="display:none">Hủy sửa</button>
     <div class="form-status" id="formStatus"></div>
   </div>
 
   <div class="card">
-    <h2>Danh sách hiện tại</h2>
+    <h2>Danh sách user</h2>
+    <div class="toolbar">
+      <div class="field search">
+        <label>Tìm theo email / tên</label>
+        <input type="text" id="fSearch" placeholder="ten@h2xstudio.com hoặc tên..." oninput="renderTable()"/>
+      </div>
+      <div class="field">
+        <label>Lọc theo app</label>
+        <select id="fFilterApp" onchange="renderTable()"><option value="">Tất cả app</option></select>
+      </div>
+      <div class="field">
+        <label>Lọc theo trạng thái</label>
+        <select id="fFilterStatus" onchange="renderTable()">
+          <option value="">Tất cả trạng thái</option>
+          <option value="active">Đang hoạt động</option>
+          <option value="locked">Đã khóa</option>
+        </select>
+      </div>
+    </div>
+    <div class="result-count" id="resultCount"></div>
     <div id="usersTableWrap"><div class="loading-note">Đang tải danh sách...</div></div>
   </div>
 </div>
 
 <script>
-// Danh sách tool hiện có — thêm tool mới vào đây khi H2X có thêm web app khác
-const AVAILABLE_TOOLS = [
-  { key: 'feeProposalGenerator', label: 'Fee Proposal Generator' },
-  { key: 'ffeLooseCalculation', label: 'FF&E Loose Calculation' },
-  { key: 'h2xQsApp', label: 'Báo cáo Khái toán tự động' },
-];
-// Email quản trị viên — phải khớp với danh sách trong Firestore Rules
-const ADMIN_EMAILS = ['huy.le@h2xstudio.com', 'giahuymichael@gmail.com'];
+// ─── TOOL CATALOG (fetched from /tool-catalog.json — the single source of ──
+// ─── truth for which apps exist; see SHARED_ACCESS_SYSTEM.md) ──────────────
+let CATALOG_APPS = []; // [{key, label, legacyIds}]
+let ALL_TOOL_KEYS = [];
+let LEGACY_TOOL_MAP = {};
 
-// Keep in sync with the same block in server.js and public/index.html.
-const ALL_TOOL_KEYS = ['feeProposalGenerator', 'ffeLooseCalculation', 'h2xQsApp'];
-const LEGACY_TOOL_MAP = { 'fee-generator': 'feeProposalGenerator' };
+async function loadCatalog() {
+  const res = await fetch('/tool-catalog.json');
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  CATALOG_APPS = Array.isArray(data.apps) ? data.apps : [];
+  ALL_TOOL_KEYS = CATALOG_APPS.map(a => a.key);
+  LEGACY_TOOL_MAP = {};
+  CATALOG_APPS.forEach(app => (app.legacyIds || []).forEach(id => { LEGACY_TOOL_MAP[id] = app.key; }));
+}
+
+// Same algorithm as lib/toolAccess.js normalizeToolAccess — any app key not
+// yet known to a user doc (new catalog entry, or never explicitly granted)
+// defaults to false, which is what keeps existing users un-granted when a
+// new app is added to the catalog.
 function normalizeToolAccess(userData) {
   userData = userData || {};
   const access = {};
@@ -166,19 +259,32 @@ function normalizeToolAccess(userData) {
   }
   return access;
 }
+function appLabel(key) {
+  const app = CATALOG_APPS.find(a => a.key === key);
+  return app ? app.label : key;
+}
+
+// Email quản trị viên — phải khớp với danh sách trong Firestore Rules
+const ADMIN_EMAILS = ['huy.le@h2xstudio.com', 'giahuymichael@gmail.com'];
 
 const auth = firebase.auth();
 const db = firebase.firestore();
 let currentUser = null;
 let editingEmail = null; // email đang sửa (null = đang thêm mới)
+let allUsers = []; // [{email, name, active, updatedAt, access}]
 
 function renderToolChecklist() {
-  document.getElementById('toolList').innerHTML = AVAILABLE_TOOLS.map(t => `
+  document.getElementById('toolList').innerHTML = CATALOG_APPS.map(t => `
     <label class="tool-chk">
       <input type="checkbox" value="${t.key}" class="tool-cb"/>
       ${t.label}
     </label>
   `).join('');
+}
+function renderAppFilterOptions() {
+  const sel = document.getElementById('fFilterApp');
+  sel.innerHTML = '<option value="">Tất cả app</option>' +
+    CATALOG_APPS.map(a => `<option value="${a.key}">${a.label}</option>`).join('');
 }
 
 function setAuthStatus(msg, isError) {
@@ -192,15 +298,24 @@ function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider).catch(err => setAuthStatus('Đăng nhập thất bại: ' + err.message, true));
 }
-function signOutUser() { auth.signOut(); }
+
+async function signOutUser() {
+  try {
+    await auth.signOut();
+  } catch (e) {
+    alert('Đăng xuất thất bại: ' + e.message + ' — vui lòng thử lại.');
+  }
+}
 
 function showAuthGate() {
   document.getElementById('authGate').classList.remove('hidden');
   document.getElementById('appContent').classList.remove('ready');
 }
-function showApp() {
+async function showApp() {
   document.getElementById('authGate').classList.add('hidden');
   document.getElementById('appContent').classList.add('ready');
+  document.getElementById('headerAccountEmail').textContent = (currentUser && currentUser.email) || '';
+  await catalogReady; // avoid racing loadUsers() against the catalog fetch
   loadUsers();
 }
 function showAccessDenied(email) {
@@ -211,7 +326,7 @@ function showAccessDenied(email) {
   showAuthGate();
 }
 
-auth.onAuthStateChanged(user => {
+auth.onAuthStateChanged(async (user) => {
   if (!user) { currentUser = null; showAuthGate(); return; }
   currentUser = user;
   if (ADMIN_EMAILS.includes(user.email)) {
@@ -221,42 +336,121 @@ auth.onAuthStateChanged(user => {
   }
 });
 
+// ─── DASHBOARD ───────────────────────────────────────────────────
+function renderDashboard() {
+  const total = allUsers.length;
+  const active = allUsers.filter(u => u.active !== false).length;
+  const locked = total - active;
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statActive').textContent = active;
+  document.getElementById('statLocked').textContent = locked;
+  document.getElementById('statApps').textContent = CATALOG_APPS.length;
+
+  const breakdown = document.getElementById('appBreakdown');
+  if (CATALOG_APPS.length === 0) {
+    breakdown.innerHTML = '<span class="app-breakdown-label">User theo app</span><span class="loading-note">Chưa có app nào trong danh mục.</span>';
+    return;
+  }
+  const chips = CATALOG_APPS.map(app => {
+    const count = allUsers.filter(u => u.access[app.key]).length;
+    return `<span class="app-chip">${app.label}: <b>${count}</b></span>`;
+  }).join('');
+  breakdown.innerHTML = '<span class="app-breakdown-label">User theo app</span>' + chips;
+}
+
+// ─── LOAD + RENDER USER TABLE ────────────────────────────────────
+function formatUpdatedAt(v) {
+  if (!v) return '—';
+  try {
+    const d = typeof v.toDate === 'function' ? v.toDate() : new Date(v);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch (e) { return '—'; }
+}
+
 async function loadUsers() {
   const wrap = document.getElementById('usersTableWrap');
   wrap.innerHTML = '<div class="loading-note">Đang tải danh sách...</div>';
   try {
     const snap = await db.collection('users').get();
-    if (snap.empty) { wrap.innerHTML = '<div class="empty-note">Chưa có ai trong danh sách.</div>'; return; }
-    const rows = [];
+    allUsers = [];
     snap.forEach(doc => {
       const d = doc.data();
-      const access = normalizeToolAccess(d);
-      const toolLabels = AVAILABLE_TOOLS
-        .filter(t => access[t.key])
-        .map(t => `<span class="tool-tag">${t.label}</span>`)
-        .join('') || '<span style="color:var(--gray);font-size:12px">— chưa có quyền nào —</span>';
-      rows.push(`
-        <tr>
-          <td>${doc.id}${d.name ? `<br><span style="color:var(--gray);font-size:11.5px">${d.name}</span>` : ''}</td>
-          <td>${toolLabels}</td>
-          <td>
-            <div class="row-actions">
-              <button onclick="editUser('${doc.id.replace(/'/g,"\\'")}')">Sửa</button>
-              <button class="del" onclick="deleteUser('${doc.id.replace(/'/g,"\\'")}')">Xoá</button>
-            </div>
-          </td>
-        </tr>`);
+      allUsers.push({
+        email: doc.id,
+        name: d.name || '',
+        active: d.active,
+        updatedAt: d.updatedAt || null,
+        access: normalizeToolAccess(d),
+      });
     });
-    wrap.innerHTML = `<table><thead><tr><th>Email</th><th>Quyền dùng tool</th><th></th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
+    renderDashboard();
+    renderTable();
   } catch (e) {
     wrap.innerHTML = `<div class="empty-note" style="color:var(--red)">Lỗi tải danh sách: ${e.message}</div>`;
   }
 }
 
+function renderTable() {
+  const wrap = document.getElementById('usersTableWrap');
+  const countEl = document.getElementById('resultCount');
+  const q = document.getElementById('fSearch').value.trim().toLowerCase();
+  const appFilter = document.getElementById('fFilterApp').value;
+  const statusFilter = document.getElementById('fFilterStatus').value;
+
+  const filtered = allUsers.filter(u => {
+    if (q && !(u.email.toLowerCase().includes(q) || u.name.toLowerCase().includes(q))) return false;
+    if (appFilter && !u.access[appFilter]) return false;
+    const isActive = u.active !== false;
+    if (statusFilter === 'active' && !isActive) return false;
+    if (statusFilter === 'locked' && isActive) return false;
+    return true;
+  });
+
+  countEl.textContent = `${filtered.length} / ${allUsers.length} user`;
+
+  if (allUsers.length === 0) { wrap.innerHTML = '<div class="empty-note">Chưa có ai trong danh sách.</div>'; return; }
+  if (filtered.length === 0) { wrap.innerHTML = '<div class="empty-note">Không có user nào khớp bộ lọc.</div>'; return; }
+
+  const selfEmail = currentUser ? currentUser.email.toLowerCase() : '';
+  const rows = filtered.map(u => {
+    const isSelf = u.email.toLowerCase() === selfEmail;
+    const isActive = u.active !== false;
+    const toolLabels = CATALOG_APPS
+      .filter(t => u.access[t.key])
+      .map(t => `<span class="tool-tag">${t.label}</span>`)
+      .join('') || '<span style="color:var(--gray);font-size:12px">— chưa có quyền nào —</span>';
+    const statusBadge = isActive
+      ? '<span class="status-badge active">Đang hoạt động</span>'
+      : '<span class="status-badge locked">Đã khóa</span>';
+    const emailEsc = u.email.replace(/'/g, "\\'");
+    return `
+      <tr>
+        <td>${u.email}${u.name ? `<br><span class="user-name">${u.name}</span>` : ''}</td>
+        <td>${toolLabels}</td>
+        <td>${statusBadge}</td>
+        <td class="updated-at">${formatUpdatedAt(u.updatedAt)}</td>
+        <td>
+          <div class="row-actions">
+            <button onclick="editUser('${emailEsc}')">Sửa</button>
+            <button onclick="toggleLock('${emailEsc}')" ${isSelf ? 'disabled title="Không thể tự khóa tài khoản của bạn"' : ''}>${isActive ? 'Khóa' : 'Mở'}</button>
+            <button class="del" onclick="deleteUser('${emailEsc}')" ${isSelf ? 'disabled title="Không thể tự xóa tài khoản của bạn"' : ''}>Xóa</button>
+          </div>
+          ${isSelf ? '<span class="self-note">Tài khoản của bạn</span>' : ''}
+        </td>
+      </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `<table><thead><tr><th>Email</th><th>App</th><th>Trạng thái</th><th>Cập nhật lúc</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ─── ADD / EDIT FORM ──────────────────────────────────────────────
 async function editUser(email) {
   editingEmail = email;
   document.getElementById('fEmail').value = email;
   document.getElementById('fEmail').disabled = true;
+  document.getElementById('formTitle').textContent = `Sửa quyền — ${email}`;
+  document.getElementById('btnCancelEdit').style.display = '';
   const doc = await db.collection('users').doc(email).get();
   const d = doc.exists ? doc.data() : {};
   document.getElementById('fName').value = d.name || '';
@@ -272,7 +466,11 @@ function resetForm() {
   document.getElementById('fEmail').value = '';
   document.getElementById('fEmail').disabled = false;
   document.getElementById('fName').value = '';
+  document.getElementById('formTitle').textContent = 'Thêm hoặc cập nhật quyền';
+  document.getElementById('btnCancelEdit').style.display = 'none';
   document.querySelectorAll('.tool-cb').forEach(cb => cb.checked = false);
+  document.getElementById('formStatus').textContent = '';
+  document.getElementById('formStatus').className = 'form-status';
 }
 
 async function saveUser() {
@@ -286,7 +484,14 @@ async function saveUser() {
   if (!email || !email.includes('@')) { status.textContent = 'Nhập email hợp lệ.'; status.className = 'form-status error'; return; }
 
   try {
-    await db.collection('users').doc(email).set({ name, toolAccess }, { merge: true });
+    // merge:true — never touches the legacy `tools` array if present, so
+    // tools:["fee-generator"] docs keep working via normalizeToolAccess's
+    // union of toolAccess + legacy tools on every read.
+    await db.collection('users').doc(email).set({
+      name,
+      toolAccess,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
     status.textContent = `✓ Đã lưu quyền cho ${email}`;
     status.className = 'form-status ok';
     resetForm();
@@ -297,8 +502,35 @@ async function saveUser() {
   }
 }
 
+// ─── LOCK / UNLOCK ────────────────────────────────────────────────
+async function toggleLock(email) {
+  if (currentUser && email.toLowerCase() === currentUser.email.toLowerCase()) {
+    alert('Bạn không thể tự khóa tài khoản của chính mình.');
+    return;
+  }
+  const user = allUsers.find(u => u.email === email);
+  if (!user) return;
+  const nextActive = !(user.active !== false);
+  const verb = nextActive ? 'mở khóa' : 'khóa';
+  if (!confirm(`Xác nhận ${verb} tài khoản ${email}?`)) return;
+  try {
+    await db.collection('users').doc(email).set({
+      active: nextActive,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    loadUsers();
+  } catch (e) {
+    alert(`Lỗi ${verb}: ` + e.message);
+  }
+}
+
+// ─── DELETE ───────────────────────────────────────────────────────
 async function deleteUser(email) {
-  if (!confirm(`Xoá hoàn toàn quyền truy cập của ${email}? Họ sẽ mất quyền dùng mọi tool ngay lập tức.`)) return;
+  if (currentUser && email.toLowerCase() === currentUser.email.toLowerCase()) {
+    alert('Bạn không thể tự xóa tài khoản của chính mình.');
+    return;
+  }
+  if (!confirm(`Xoá hoàn toàn quyền truy cập của ${email}? Họ sẽ mất quyền dùng mọi app ngay lập tức.`)) return;
   try {
     await db.collection('users').doc(email).delete();
     loadUsers();
@@ -307,7 +539,17 @@ async function deleteUser(email) {
   }
 }
 
-renderToolChecklist();
+// ─── BOOTSTRAP ────────────────────────────────────────────────────
+// showApp() awaits this before loading users, so the user table is never
+// rendered against an empty/partial ALL_TOOL_KEYS.
+const catalogReady = loadCatalog()
+  .then(() => {
+    renderToolChecklist();
+    renderAppFilterOptions();
+  })
+  .catch(e => {
+    document.getElementById('toolList').innerHTML = `<span style="color:var(--red);font-size:12px">Không tải được danh mục app: ${e.message}</span>`;
+  });
 </script>
 </body>
 </html>
