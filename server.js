@@ -4,6 +4,12 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 const { generateProposal } = require('./generatePptx');
+const {
+  normalizeEmail,
+  makeFetchOwnUserDoc,
+  resolveToolAccess,
+  makeRequireToolAccess,
+} = require('./lib/toolAccess');
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
@@ -24,9 +30,8 @@ function getSigningKey(header, callback) {
 }
 
 // Verifies the request is from a genuinely signed-in Firebase user of this
-// project. Does NOT check per-tool Firestore permission (that's enforced
-// client-side by Firestore Security Rules) — this middleware only blocks
-// fully anonymous/direct API abuse from outside the app.
+// project. req.userEmail is ALWAYS derived from the verified token — never
+// from req.body/req.query/custom headers, which callers could set to anything.
 function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
@@ -42,10 +47,22 @@ function requireAuth(req, res, next) {
       console.error('Firebase token verification failed:', err.name, err.message);
       return res.status(401).json({ error: 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng tải lại trang.' });
     }
-    req.userEmail = decoded.email;
+    const email = normalizeEmail(decoded.email);
+    if (!email) {
+      return res.status(401).json({ error: 'Token không chứa email hợp lệ.' });
+    }
+    req.userEmail = email;
+    req.rawIdToken = token;
     next();
   });
 }
+
+// ─── TOOL ACCESS (shared across all H2X web apps) ─────────────────
+// Pure logic lives in ./lib/toolAccess.js (unit-tested there). Client copies
+// of normalizeToolAccess (public/index.html, public/admin.html) must be kept
+// in sync with lib/toolAccess.js's ALL_TOOL_KEYS / LEGACY_TOOL_MAP.
+const fetchOwnUserDoc = makeFetchOwnUserDoc(FIREBASE_PROJECT_ID);
+const requireToolAccess = makeRequireToolAccess(fetchOwnUserDoc);
 
 // ─── TYPOLOGY ZONE TEMPLATES ─────────────────────────────────────
 const ZONE_TEMPLATES = {
@@ -187,7 +204,7 @@ const TYPOLOGY_CONTEXT = {
 };
 
 // ─── AI RESEARCH ENDPOINT ────────────────────────────────────────
-app.post('/api/research', requireAuth, async (req, res) => {
+app.post('/api/research', requireAuth, requireToolAccess('feeProposalGenerator'), async (req, res) => {
   const { area, typology, mood, location, projectName, description, userApiKey } = req.body;
 
   const apiKey = (userApiKey && userApiKey.trim()) || process.env.ANTHROPIC_API_KEY;
@@ -327,7 +344,7 @@ Return ONLY this JSON (no markdown, no backticks, no text before/after):
 });
 
 // ─── GENERATE PPTX ENDPOINT ──────────────────────────────────────
-app.post('/api/generate', requireAuth, async (req, res) => {
+app.post('/api/generate', requireAuth, requireToolAccess('feeProposalGenerator'), async (req, res) => {
   try {
     const data = req.body;
     console.log('Generating proposal for:', data.projectName);
@@ -340,6 +357,18 @@ app.post('/api/generate', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('Generation error:', err.message);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── TOOL ACCESS ENDPOINT (used by any H2X app to self-check permissions) ─
+app.get('/api/tool-access', requireAuth, async (req, res) => {
+  try {
+    const resolved = await resolveToolAccess(fetchOwnUserDoc, req.userEmail, req.rawIdToken);
+    if (!resolved.ok) return res.status(resolved.status).json({ error: resolved.error });
+    res.json(resolved.access);
+  } catch (e) {
+    console.error('/api/tool-access error:', e.message);
+    res.status(502).json({ error: 'Không đọc được quyền truy cập.' });
   }
 });
 

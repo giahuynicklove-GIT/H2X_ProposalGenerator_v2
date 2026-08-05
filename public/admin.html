@@ -139,12 +139,33 @@ tr:hover td{background:var(--offwhite)}
 </div>
 
 <script>
-// Danh sách tool hiện có — thêm tool mới vào đây khi H2X có thêm công cụ HTML khác
+// Danh sách tool hiện có — thêm tool mới vào đây khi H2X có thêm web app khác
 const AVAILABLE_TOOLS = [
-  { id: 'fee-generator', label: 'Fee Proposal Generator' },
+  { key: 'feeProposalGenerator', label: 'Fee Proposal Generator' },
+  { key: 'ffeLooseCalculation', label: 'FF&E Loose Calculation' },
+  { key: 'h2xQsApp', label: 'Báo cáo Khái toán tự động' },
 ];
 // Email quản trị viên — phải khớp với danh sách trong Firestore Rules
 const ADMIN_EMAILS = ['huy.le@h2xstudio.com', 'giahuymichael@gmail.com'];
+
+// Keep in sync with the same block in server.js and public/index.html.
+const ALL_TOOL_KEYS = ['feeProposalGenerator', 'ffeLooseCalculation', 'h2xQsApp'];
+const LEGACY_TOOL_MAP = { 'fee-generator': 'feeProposalGenerator' };
+function normalizeToolAccess(userData) {
+  userData = userData || {};
+  const access = {};
+  ALL_TOOL_KEYS.forEach(k => { access[k] = false; });
+  if (userData.toolAccess) {
+    ALL_TOOL_KEYS.forEach(k => { if (userData.toolAccess[k] === true) access[k] = true; });
+  }
+  if (Array.isArray(userData.tools)) {
+    userData.tools.forEach(legacyId => {
+      const mapped = LEGACY_TOOL_MAP[legacyId];
+      if (mapped) access[mapped] = true;
+    });
+  }
+  return access;
+}
 
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -154,7 +175,7 @@ let editingEmail = null; // email đang sửa (null = đang thêm mới)
 function renderToolChecklist() {
   document.getElementById('toolList').innerHTML = AVAILABLE_TOOLS.map(t => `
     <label class="tool-chk">
-      <input type="checkbox" value="${t.id}" class="tool-cb"/>
+      <input type="checkbox" value="${t.key}" class="tool-cb"/>
       ${t.label}
     </label>
   `).join('');
@@ -209,11 +230,11 @@ async function loadUsers() {
     const rows = [];
     snap.forEach(doc => {
       const d = doc.data();
-      const tools = Array.isArray(d.tools) ? d.tools : [];
-      const toolLabels = tools.map(id => {
-        const t = AVAILABLE_TOOLS.find(x => x.id === id);
-        return `<span class="tool-tag">${t ? t.label : id}</span>`;
-      }).join('') || '<span style="color:var(--gray);font-size:12px">— chưa có quyền nào —</span>';
+      const access = normalizeToolAccess(d);
+      const toolLabels = AVAILABLE_TOOLS
+        .filter(t => access[t.key])
+        .map(t => `<span class="tool-tag">${t.label}</span>`)
+        .join('') || '<span style="color:var(--gray);font-size:12px">— chưa có quyền nào —</span>';
       rows.push(`
         <tr>
           <td>${doc.id}${d.name ? `<br><span style="color:var(--gray);font-size:11.5px">${d.name}</span>` : ''}</td>
@@ -239,8 +260,8 @@ async function editUser(email) {
   const doc = await db.collection('users').doc(email).get();
   const d = doc.exists ? doc.data() : {};
   document.getElementById('fName').value = d.name || '';
-  const tools = Array.isArray(d.tools) ? d.tools : [];
-  document.querySelectorAll('.tool-cb').forEach(cb => { cb.checked = tools.includes(cb.value); });
+  const access = normalizeToolAccess(d);
+  document.querySelectorAll('.tool-cb').forEach(cb => { cb.checked = !!access[cb.value]; });
   document.getElementById('formStatus').textContent = `Đang sửa quyền cho ${email}`;
   document.getElementById('formStatus').className = 'form-status';
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -257,13 +278,15 @@ function resetForm() {
 async function saveUser() {
   const email = document.getElementById('fEmail').value.trim().toLowerCase();
   const name = document.getElementById('fName').value.trim();
-  const tools = Array.from(document.querySelectorAll('.tool-cb:checked')).map(cb => cb.value);
+  const toolAccess = {};
+  ALL_TOOL_KEYS.forEach(k => { toolAccess[k] = false; });
+  document.querySelectorAll('.tool-cb:checked').forEach(cb => { toolAccess[cb.value] = true; });
   const status = document.getElementById('formStatus');
 
   if (!email || !email.includes('@')) { status.textContent = 'Nhập email hợp lệ.'; status.className = 'form-status error'; return; }
 
   try {
-    await db.collection('users').doc(email).set({ name, tools }, { merge: true });
+    await db.collection('users').doc(email).set({ name, toolAccess }, { merge: true });
     status.textContent = `✓ Đã lưu quyền cho ${email}`;
     status.className = 'form-status ok';
     resetForm();
