@@ -14,6 +14,11 @@
       "key": "h2xQsApp",
       "label": "Báo cáo Khái toán tự động",
       "legacyIds": []
+    },
+    {
+      "key": "h2xRenderStudio",
+      "label": "H2X Render Studio",
+      "legacyIds": []
     }
   ]
 }
